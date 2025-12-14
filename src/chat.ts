@@ -47,7 +47,7 @@ class SGCC {
     });
   }
   async recv(fts: string) {
-    return await fetch(this.#base + '/cgi-bin/recv.d', {
+    return await fetch(this.#base + '/cgi-bin/recv', {
       headers: {
         'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase(),
         'x-sgcc-fts': fts
