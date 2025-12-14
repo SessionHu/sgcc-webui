@@ -1,0 +1,167 @@
+import { Md5 } from 'ts-md5';
+import pLimit from 'p-limit';
+import type * as openpgp from 'openpgp';
+
+import * as keystore from './keystore';
+import * as idbutils from './idbutils';
+import type { WindowMessageChatRecv } from './typings';
+
+function getAvatar(name: string, email?: string): string {
+  if (email)
+    return 'https://www.gravatar.com/avatar/' + Md5.hashStr(email) + '?s=64&d=identicon';
+  const color = Math.floor(Array.from(name).map(v => v.codePointAt(0) || 0).reduce((a, b) => a + b, 0)).toString(16).padEnd(3, 'a').substring(0, 3);
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect width="64" height="64" fill="#' + color + '" />' +
+    '<text x="50%" y="50%" ' +
+      'dominant-baseline="central" ' +
+      'text-anchor="middle" ' +
+      'font-family="sans-serif" ' +
+      'font-size="32" ' +
+      'fill="#FFFFFF">' +
+      name[0] +
+    '</text>' +
+    '</svg>'
+  );
+}
+
+class SGCC {
+  readonly #base: string;
+  constructor(base: string) {
+    this.#base = base;
+  }
+  async send(key: openpgp.Key, message: ChatMessage) {
+    const res = await keystore.doEncrypt(key, message.text);
+    return await fetch(this.#base + '/cgi-bin/send', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/pgp-encrypted',
+        'x-sgcc-to': key.getFingerprint().toUpperCase()
+      },
+      body: res as Uint8Array<ArrayBuffer>
+    });
+  }
+  async watch(offset = 0n) {
+    return await fetch(this.#base + '/cgi-bin/watch?offset=' + offset, {
+      headers: { 'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase() }
+    });
+  }
+  async recv(fts: string) {
+    return await fetch(this.#base + '/cgi-bin/recv.d', {
+      headers: {
+        'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase(),
+        'x-sgcc-fts': fts
+      }
+    });
+  }
+}
+const sgcc = new SGCC('https://sgcc.xhustudio.eu.org');
+
+export const chatStat = {
+  chatMap: new Map<string, Chat>,
+  currentChat: null
+} as {
+  readonly chatMap: Map<string, Chat>,
+  currentChat: Chat | null
+};
+
+export class Chat {
+  readonly key: openpgp.Key;
+  get name() {
+    return this.#altname || this.key.users[0]?.userID?.name || 'Anonymous';
+  }
+  set name(n: string) {
+    this.#altname = n;
+  }
+  #altname?: string;
+  get email() {
+    return this.key.users[0]?.userID?.email || '???';
+  }
+  get avatar() {
+    return getAvatar(this.name, this.email.trim().toLowerCase());
+  }
+  constructor(key: openpgp.Key) {
+    this.key = key;
+  }
+  async sendMessage(text: string) {
+    const msg = new ChatMessage(this, text, 'outgoing');
+    await msg.send();
+    return msg;
+  }
+  async fetchMessage(offset: bigint, limit: number) {
+		return await idbutils.messages.getMessagesBeforeOffset(this.key.getFingerprint().toUpperCase(), offset, limit);
+  }
+  async lastMessage() {
+    return await idbutils.messages.lastMessage(this.key.getFingerprint().toUpperCase());
+  }
+}
+
+export class ChatMessage {
+  #id: bigint = 0n;
+  get id() {
+    return this.#id;
+  }
+  readonly text: string;
+  readonly chat: Chat;
+  type: 'incoming' | 'outgoing';
+  constructor(chat: Chat, text: string, type: 'incoming' | 'outgoing', id?: bigint) {
+    this.chat = chat;
+    this.text = text;
+    this.type = type;
+    if (id) this.#id = typeof id === 'string' ? BigInt(id) : id
+  }
+  async send() {
+    if (this.id || this.type === 'incoming') return;
+    const res = await sgcc.send(this.chat.key, this);
+    if (!res.ok) console.warn('Request failed! Code:' + res.status);
+    this.#id = BigInt((await res.text()).trim());
+    idbutils.messages.addMessage({
+      keyfp: this.chat.key.getFingerprint().toUpperCase(),
+      message: this.text,
+      msgid: this.#id,
+      type: this.type
+    });
+  }
+}
+
+const limit = pLimit(16);
+
+// receive messages
+(async () => {
+  let offset = (await idbutils.messages.lastMessage())?.msgid || 0n;
+  while (true) {
+    try {
+      const res = (await (await sgcc.watch(offset)).text()).split('\n').filter(Boolean);
+      const messagePromises = res.map(msgid => limit(async () => {
+        const msgbody = await (await sgcc.recv(msgid)).bytes();
+        return { msgbody, msgid };
+      }));
+      for await (const p of messagePromises) {
+        const msgbody = p.msgbody;
+        const msgid = BigInt(p.msgid);
+        const res = await keystore.doDecrypt(msgbody);
+        const fp = (await keystore.store.getKey(res.signatures[0]?.keyID.toHex()!))!.getFingerprint().toUpperCase();
+        const chat = chatStat.chatMap.get(fp)!;
+        const message = new ChatMessage(chat, res.data, 'incoming', msgid);
+        idbutils.messages.addMessage({
+          keyfp: fp,
+          message: msgbody,
+          msgid,
+          type: 'incoming'
+        });
+        window.postMessage({
+          type: 'chat-recv',
+          data: {
+            fp,
+            text: message.text,
+            type: message.type,
+          }
+        } as WindowMessageChatRecv);
+        offset = msgid;
+      }
+    } catch (e) {
+      console.warn(e);
+      await new Promise((r) => setTimeout(r, 1e4));
+    }
+  }
+})();

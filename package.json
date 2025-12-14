@@ -1,0 +1,21 @@
+{
+  "devDependencies": {
+    "esbuild": "^0.25.9",
+    "esbuild-sass-plugin": "^3.3.1",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "dev": "node build.mjs --serve",
+    "build": "node build.mjs --minify"
+  },
+  "type": "module",
+  "dependencies": {
+    "idb": "^8.0.3",
+    "openpgp": "^6.2.2",
+    "p-limit": "^7.1.1",
+    "ts-md5": "^2.0.1"
+  },
+  "license": "GPL-3.0-or-later",
+  "name": "sgcc-webui",
+  "private": true
+}
