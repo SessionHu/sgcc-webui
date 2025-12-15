@@ -1,0 +1,44 @@
+@charset "utf-8";
+@use 'sass:color';
+
+// Variables
+$background-color: #f7f9fc;
+$sidebar-bg: #eef2f8;
+$main-bg: #ffffff;
+$border-color: #e0e6ef;
+$text-color: #333;
+$secondary-text: #666;
+$active-item: #d6e2f4;
+$input-bg: #f0f2f5;
+$incoming-bubble: #e2f0fb;
+$outgoing-bubble: #dcf8c6;
+$font-family: system-ui, sans-serif;
+
+// Global styles
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family;
+  background-color: $background-color;
+  color: $text-color;
+  overflow: hidden;
+}
+
+h3 {
+  margin-block-start: .2em;
+  margin-block-end: .2em;
+  line-height: 100%;
+  margin-right: auto;
+}
+
+// Base styles for reuse
+%base-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  .emoji-icon {
+    color: $secondary-text;
+  }
+}

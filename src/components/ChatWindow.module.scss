@@ -1,0 +1,126 @@
+@use 'sass:color';
+@use '../globals.scss' as *;
+
+.chatMain {
+  flex: 1;
+  background-color: $main-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainHeader {
+  padding: 16px;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+}
+
+.toggleButton {
+  @extend %base-button;
+  display: none; // Initially hidden, shown in media query
+  margin-right: 4px;
+}
+
+
+.chatMessages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  > :last-child {
+    height: 32px;
+  }
+}
+
+.messageContainer {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.message {
+  width: fit-content;
+  max-width: 90%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-family: monospace;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.messageContent {
+  word-wrap: break-word;
+  white-space: pre;
+}
+
+.incoming {
+  background-color: $incoming-bubble;
+  border-bottom-left-radius: 4px;
+}
+
+.outgoing {
+  background-color: $outgoing-bubble;
+  border-bottom-right-radius: 4px;
+  margin-left: auto;
+}
+
+
+.chatInputArea {
+  display: flex;
+  padding: 16px;
+  border-top: 1px solid $border-color;
+  max-height: 6em;
+
+  textarea {
+    flex: 1;
+    border: none;
+    background-color: $input-bg;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 15px;
+    outline: none;
+    resize: none;
+    height: 20px;
+    max-height: 5em;
+    scrollbar-width: thin;
+    white-space: pre;
+    overflow-wrap: normal;
+
+    &::placeholder {
+      color: $secondary-text;
+    }
+  }
+
+  button {
+    box-sizing: content-box;
+    font-size: 14px;
+    border: none;
+    background-color: #8da4d5;
+    color: white;
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin-left: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($color: #8da4d5, $lightness: -5%);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .toggleButton {
+    display: block;
+  }
+
+  .chatMain {
+    transition: transform 0.3s ease-in-out; // 添加过渡效果
+    min-width: 100%;
+    transform: translateX(0);
+  }
+  
+  .visible {
+      transform: translateX(-100%);
+  }
+}

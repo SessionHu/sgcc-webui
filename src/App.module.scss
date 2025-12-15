@@ -1,0 +1,23 @@
+.chatContainer {
+  display: flex;
+  width: 90vw;
+  height: 90dvh;
+  max-width: 1200px;
+  max-height: 800px;
+  margin: 5dvh auto;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chatContainer {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

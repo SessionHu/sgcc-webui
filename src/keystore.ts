@@ -19,7 +19,7 @@ export const store = {
     const fp = key.getFingerprint().toUpperCase();
     return await idbutils.keystore.removeKey(fp);
   },
-  async getAllKeys(): Promise<ReadonlyArray<openpgp.Key>> {
+  async getAllKeys(): Promise<Array<Readonly<openpgp.Key>>> {
     return Promise.all((await idbutils.keystore.getAllKeys()).map(k => openpgp.readKey({ binaryKey: k })));
   }
 };
