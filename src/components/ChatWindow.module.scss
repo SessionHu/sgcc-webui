@@ -6,6 +6,8 @@
   background-color: $main-bg;
   display: flex;
   flex-direction: column;
+  width: calc(90vw - 350px);
+  max-width: 1200px - 350px;
 }
 
 .mainHeader {
