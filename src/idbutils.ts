@@ -53,7 +53,7 @@ export const keystore = {
 export interface ChatMessageRecord {
   msgid: bigint;
   keyfp: string;
-  message: Uint8Array | string;
+  message: Uint8Array;
   type: 'incoming' | 'outgoing';
 }
 

@@ -30,8 +30,7 @@ class SGCC {
   constructor(base: string) {
     this.#base = base;
   }
-  async send(key: openpgp.Key, message: ChatMessage) {
-    const res = await keystore.doEncrypt(key, message.text);
+  async send(key: openpgp.Key, res: Uint8Array) {
     return await fetch(this.#base + '/cgi-bin/send', {
       method: 'POST',
       headers: {
@@ -83,44 +82,23 @@ export class Chat {
   constructor(key: openpgp.Key) {
     this.key = key;
   }
-  async sendMessage(text: string) {
-    const msg = new ChatMessage(this, text, 'outgoing');
-    await msg.send();
-    return msg;
+  async sendMessage(message: Uint8Array) {
+    const res = await sgcc.send(this.key, message);
+    if (!res.ok) console.warn('Request failed! Code:' + res.status);
+    const r: idbutils.ChatMessageRecord = {
+      keyfp: this.key.getFingerprint().toUpperCase(),
+      message,
+      type: 'outgoing',
+      msgid: BigInt((await res.text()).trim())
+    };
+    idbutils.messages.addMessage(r);
+    return r;
   }
   async fetchMessage(offset: bigint, limit: number) {
 		return await idbutils.messages.getMessagesBeforeOffset(this.key.getFingerprint().toUpperCase(), offset, limit);
   }
   async lastMessage() {
     return await idbutils.messages.lastMessage(this.key.getFingerprint().toUpperCase());
-  }
-}
-
-export class ChatMessage {
-  #id: bigint = 0n;
-  get id() {
-    return this.#id;
-  }
-  readonly text: string;
-  readonly chat: Chat;
-  type: 'incoming' | 'outgoing';
-  constructor(chat: Chat, text: string, type: 'incoming' | 'outgoing', id?: bigint) {
-    this.chat = chat;
-    this.text = text;
-    this.type = type;
-    if (id) this.#id = typeof id === 'string' ? BigInt(id) : id
-  }
-  async send() {
-    if (this.id || this.type === 'incoming') return;
-    const res = await sgcc.send(this.chat.key, this);
-    if (!res.ok) console.warn('Request failed! Code:' + res.status);
-    this.#id = BigInt((await res.text()).trim());
-    idbutils.messages.addMessage({
-      keyfp: this.chat.key.getFingerprint().toUpperCase(),
-      message: this.text,
-      msgid: this.#id,
-      type: this.type
-    });
   }
 }
 
@@ -137,25 +115,20 @@ const limit = pLimit(16);
         return { msgbody, msgid };
       }));
       for await (const p of messagePromises) {
-        const msgbody = p.msgbody;
+        const message = p.msgbody;
         const msgid = BigInt(p.msgid);
-        const res = await keystore.doDecrypt(msgbody);
-        const fp = (await keystore.store.getKey(res.signatures[0]?.keyID.toHex()!))!.getFingerprint().toUpperCase();
-        const chat = chatStat.chatMap.get(fp)!;
-        const message = new ChatMessage(chat, res.data, 'incoming', msgid);
-        idbutils.messages.addMessage({
-          keyfp: fp,
-          message: msgbody,
+        const res = await keystore.doDecrypt(message);
+        const keyfp = (await keystore.store.getKey(res.signatures[0]?.keyID.toHex()!))!.getFingerprint().toUpperCase();
+        const msgrecord: idbutils.ChatMessageRecord = {
+          keyfp,
+          type: 'incoming',
           msgid,
-          type: 'incoming'
-        });
+          message
+        };
+        idbutils.messages.addMessage(msgrecord);
         window.postMessage({
           type: 'chat-recv',
-          data: {
-            fp,
-            text: message.text,
-            type: message.type,
-          }
+          data: msgrecord
         } as WindowMessageChatRecv);
         offset = msgid;
       }

@@ -1,3 +1,5 @@
+import type { ChatMessageRecord } from './idbutils';
+
 export type WindowMessage = WindowMessageChatRecv;
 
 export interface WindowMessageBase {
@@ -7,9 +9,5 @@ export interface WindowMessageBase {
 
 export interface WindowMessageChatRecv extends WindowMessageBase {
   type: "chat-recv",
-  data: {
-    text: string,
-    fp: string,
-    type: 'incoming' | 'outgoing'
-  }
+  data: ChatMessageRecord
 }

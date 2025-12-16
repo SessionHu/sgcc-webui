@@ -1,7 +1,8 @@
 import React from 'react';
+import MessageContent from './MessageContent';
+import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
 import type { ChatMessageRecord } from '../idbutils';
-import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {
   chat: Chat | null;
@@ -23,7 +24,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
-    onSendMessage(inputValue.trim());
+    onSendMessage(inputValue);
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     setInputValue('');
   };
@@ -37,10 +38,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <h3>{chat ? chat.name : 'Select a contact'}</h3>
       </header>
       <div className={styles.chatMessages}>
-        {messages.map((msg, index) => (
-          <div key={index} className={styles.messageContainer}>
+        {messages.map((msg) => (
+          <div key={msg.msgid.toString()} className={styles.messageContainer}>
             <div className={`${styles.message} ${styles[msg.type]}`}>
-               <span className={styles.messageContent}>{msg.message}</span>
+              <span className={styles.messageContent}>
+                <MessageContent message={msg.message} />
+              </span>
             </div>
           </div>
         ))}

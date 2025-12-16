@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { store, addKeysFromArmored, doDecrypt } from './keystore';
+import { store, addKeysFromArmored, doDecrypt, doEncrypt } from './keystore';
 import { Chat, chatStat } from './chat';
 import type { Key } from 'openpgp';
 import type { WindowMessage } from './typings';
@@ -38,11 +38,6 @@ function App() {
 
       const fetchMessages = async () => {
         const history = (await currentChat.fetchMessage(BigInt(Date.now() + '000000000'), Infinity)).reverse();
-        for (const m of history) {
-          if (typeof m.message !== 'string') {
-            m.message = (await doDecrypt(m.message)).data as string;
-          }
-        }
         setMessages(history);
       };
       fetchMessages();
@@ -57,13 +52,8 @@ function App() {
     const handleMessage = (e: MessageEvent<WindowMessage>) => {
       if (e.data.type === 'chat-recv') {
         const currfp = activeContact?.getFingerprint().toUpperCase();
-        if (e.data.data.fp === currfp) {
-          setMessages(prev => [...prev, {
-            keyfp: e.data.data.fp,
-            message: e.data.data.text,
-            type: e.data.data.type,
-            msgid: 0n
-          }]);
+        if (e.data.data.keyfp === currfp) {
+          setMessages(prev => [...prev, e.data.data]);
         }
         // TODO: Update last message for non-active chats in sidebar
         loadContacts();
@@ -87,17 +77,12 @@ function App() {
     }
   };
   
-  const handleSendMessage = (messageContent: string) => {
+  const handleSendMessage = async (messageContent: string) => {
     if (!chat || !messageContent.trim()) return;
+    const message = await doEncrypt(chat.key, messageContent);
+    const msgrecord = await chat.sendMessage(message);
+    setMessages(prev => [...prev, msgrecord]);
     
-    setMessages(prev => [...prev, {
-      type: 'outgoing',
-      message: messageContent,
-      keyfp: chat.key.getFingerprint().toUpperCase(),
-      msgid: 0n
-    }]);
-    
-    chat.sendMessage(messageContent);
   };
 
   const toggleSidebar = () => {

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Key } from 'openpgp';
+import { doDecrypt } from '../keystore';
 import { Chat } from '../chat';
 import styles from './ContactItem.module.scss';
 
@@ -20,8 +21,7 @@ const ContactItem: React.FC<ContactItemProps> = ({ contact, isActive, onSelect }
     // This is a simplified async operation inside useEffect
     const fetchLastMessage = async () => {
       const msg = await chat.lastMessage();
-      // TODO: Decrypt if necessary
-      setLastMessage(msg?.message as string || 'No messages yet');
+      setLastMessage(msg?.message ? (await doDecrypt(msg.message)).data : 'No messages yet');
     };
     fetchLastMessage();
   }, [contact]);

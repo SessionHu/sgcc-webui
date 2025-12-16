@@ -73,7 +73,7 @@ export async function doEncrypt(key: openpgp.Key, messagetext: string) {
   });
   const encrypted = await openpgp.encrypt({
     message,
-    encryptionKeys: key,
+    encryptionKeys: [ key, await getMyKey()],
     signingKeys: await getMyDecryptedPrivateKey(),
     format: 'binary'
   });
