@@ -50,14 +50,38 @@ export async function getMyKey() {
 
 const getMyDecryptedPrivateKey = (() => {
   let cache: openpgp.PrivateKey | null = null;
-  setInterval(() => cache = null, 1000 * 60); // 60s
+  let cacheClearTimer: NodeJS.Timeout | null = null;
+
+  const scheduleCacheClear = () => {
+    if (cacheClearTimer) {
+      clearTimeout(cacheClearTimer);
+    }
+    cacheClearTimer = setTimeout(() => {
+      cache = null;
+      cacheClearTimer = null;
+    }, 1000 * 60);
+  };
+
   return async function cb() {
+    if (cache) {
+      scheduleCacheClear();
+      return cache;
+    }
+
     try {
-      return cache ??= await openpgp.decryptKey({
+      const decryptedKey = await openpgp.decryptKey({
         privateKey: privatekey,
         passphrase: prompt('passphrase:')!
       });
+      cache = decryptedKey;
+      scheduleCacheClear();
+      return cache;
     } catch (e) {
+      cache = null;
+      if (cacheClearTimer) {
+        clearTimeout(cacheClearTimer);
+        cacheClearTimer = null;
+      }
       alert('Invalid passphrase: ' + String(e));
       console.warn(e);
       return cb();
