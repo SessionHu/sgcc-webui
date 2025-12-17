@@ -12,18 +12,21 @@ export const store = {
     return await openpgp.readKey({ binaryKey });
   },
   async addKey(key: openpgp.Key) {
+    cachedAllKeys = null;
     const fp = key.getFingerprint().toUpperCase();
     const binaryKey = key.write();
     return await idbutils.keystore.addKey(fp, binaryKey);
   },
   async removeKey(key: openpgp.Key) {
+    cachedAllKeys = null;
     const fp = key.getFingerprint().toUpperCase();
     return await idbutils.keystore.removeKey(fp);
   },
   async getAllKeys(): Promise<Array<Readonly<openpgp.Key>>> {
-    return Promise.all((await idbutils.keystore.getAllKeys()).map(k => openpgp.readKey({ binaryKey: k })));
+    return cachedAllKeys ??= await Promise.all((await idbutils.keystore.getAllKeys()).map(k => openpgp.readKey({ binaryKey: k })));
   }
 };
+let cachedAllKeys: Array<Readonly<openpgp.Key>> | null;
 
 const privatekey: openpgp.PrivateKey = await (async () => {
   try {

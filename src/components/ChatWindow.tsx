@@ -1,5 +1,5 @@
 import React from 'react';
-import MessageContent from './MessageContent';
+import ChatMessage from './ChatMessage';
 import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
 import type { ChatMessageRecord } from '../idbutils';
@@ -39,13 +39,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </header>
       <div className={styles.chatMessages}>
         {messages.map((msg) => (
-          <div key={msg.msgid.toString()} className={styles.messageContainer}>
-            <div className={`${styles.message} ${styles[msg.type]}`}>
-              <span className={styles.messageContent}>
-                <MessageContent message={msg.message} />
-              </span>
-            </div>
-          </div>
+          <ChatMessage key={msg.msgid.toString()} message={msg} />
         ))}
         <div ref={messagesEndRef} />
       </div>
