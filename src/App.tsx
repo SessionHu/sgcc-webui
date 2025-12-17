@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { store, addKeysFromArmored, doDecrypt, doEncrypt } from './keystore';
+import { showPrompt } from './components/Prompt';
+import { store, addKeysFromArmored, doEncrypt } from './keystore';
 import { Chat, chatStat } from './chat';
 import type { Key } from 'openpgp';
 import type { WindowMessage } from './typings';
@@ -66,7 +67,11 @@ function App() {
 
   const handleAddContact = async () => {
     try {
-      const armoredKeys = prompt('Enter keys in ASCII-armored format:');
+      const armoredKeys = await showPrompt({
+        label: 'Enter keys in ASCII-armored format:',
+        title: 'Add contact',
+        type: 'multiline'
+      });
       if (armoredKeys) {
         await addKeysFromArmored(armoredKeys);
         await loadContacts();

@@ -1,5 +1,6 @@
 import * as openpgp from 'openpgp';
 import * as idbutils from './idbutils';
+import { showPrompt } from './components/Prompt';
 
 export const store = {
   async getKey(fpOrId: string) {
@@ -34,7 +35,16 @@ const privatekey: openpgp.PrivateKey = await (async () => {
   }
   while (true)
     try {
-      const k = await openpgp.readPrivateKey({ armoredKey: prompt('private key:')! });
+      const armoredKey = await showPrompt({
+        title: 'Private Key Input',
+        label: 'Please enter your armored private key:',
+        type: 'multiline',
+      });
+      if (armoredKey === null) {
+        alert('Private key input cancelled. Cannot proceed without a private key.');
+        continue;
+      }
+      const k = await openpgp.readPrivateKey({ armoredKey });
       idbutils.myinfo.setMyinfo(k.write()).catch(console.warn);
       alert('Welcome back! ' + k.users[0]?.userID?.userID);
       return k;
@@ -50,7 +60,8 @@ export async function getMyKey() {
 
 const getMyDecryptedPrivateKey = (() => {
   let cache: openpgp.PrivateKey | null = null;
-  let cacheClearTimer: NodeJS.Timeout | null = null;
+  let cacheClearTimer: ReturnType<typeof setTimeout> | null = null;
+  let decryptionPromise: Promise<openpgp.PrivateKey> | null = null;
 
   const scheduleCacheClear = () => {
     if (cacheClearTimer) {
@@ -62,30 +73,50 @@ const getMyDecryptedPrivateKey = (() => {
     }, 1000 * 60);
   };
 
-  return async function cb() {
+  const promptAndDecrypt = async (): Promise<openpgp.PrivateKey> => {
+    try {
+      const passphrase = await showPrompt({
+        title: 'Passphrase Input',
+        label: 'Please enter your passphrase:',
+        type: 'password',
+      });
+      if (passphrase === null) {
+        throw new Error('Passphrase input cancelled.');
+      }
+      const decryptedKey = await openpgp.decryptKey({
+        privateKey: privatekey,
+        passphrase: passphrase
+      });
+      return decryptedKey;
+    } catch (e) {
+      alert('Invalid passphrase: ' + String(e));
+      console.warn(e);
+      return promptAndDecrypt(); // Re-prompt on failure
+    }
+  };
+
+  return async function getMyDecryptedPrivateKey() {
     if (cache) {
       scheduleCacheClear();
       return cache;
     }
 
-    try {
-      const decryptedKey = await openpgp.decryptKey({
-        privateKey: privatekey,
-        passphrase: prompt('passphrase:')!
-      });
-      cache = decryptedKey;
-      scheduleCacheClear();
-      return cache;
-    } catch (e) {
-      cache = null;
-      if (cacheClearTimer) {
-        clearTimeout(cacheClearTimer);
-        cacheClearTimer = null;
-      }
-      alert('Invalid passphrase: ' + String(e));
-      console.warn(e);
-      return cb();
+    if (decryptionPromise) {
+      return await decryptionPromise;
     }
+
+    decryptionPromise = (async () => {
+      try {
+        const decryptedKey = await promptAndDecrypt();
+        cache = decryptedKey;
+        scheduleCacheClear();
+        return cache;
+      } finally {
+        decryptionPromise = null;
+      }
+    })();
+
+    return await decryptionPromise;
   };
 })();
 

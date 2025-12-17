@@ -1,0 +1,50 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.prompt {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  min-width: 300px;
+}
+
+.title {
+  margin-top: 0;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.textarea {
+  min-height: 100px;
+  min-width: 100%;
+  //resize: vertical;
+}
+
+.buttons {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.button {
+  margin-left: 10px;
+}
