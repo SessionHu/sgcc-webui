@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import { showPrompt } from './components/Prompt';
 import { store, addKeysFromArmored, doEncrypt } from './keystore';
-import { Chat, chatStat } from './chat';
+import { Chat } from './chat';
 import type { Key } from 'openpgp';
 import type { WindowMessage } from './typings';
 import type { ChatMessageRecord } from './idbutils';
@@ -34,7 +34,6 @@ function App() {
   useEffect(() => {
     if (activeContact) {
       const currentChat = new Chat(activeContact);
-      chatStat.currentChat = currentChat; // Keep old logic happy
       setChat(currentChat);
 
       const fetchMessages = async () => {

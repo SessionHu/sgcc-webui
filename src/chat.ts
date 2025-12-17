@@ -56,14 +56,6 @@ class SGCC {
 }
 const sgcc = new SGCC('https://sgcc.xhustudio.eu.org');
 
-export const chatStat = {
-  chatMap: new Map<string, Chat>,
-  currentChat: null
-} as {
-  readonly chatMap: Map<string, Chat>,
-  currentChat: Chat | null
-};
-
 export class Chat {
   readonly key: openpgp.Key;
   get name() {
