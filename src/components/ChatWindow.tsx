@@ -62,7 +62,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           }}
           disabled={!chat}
         />
-        <button onClick={handleSendMessage} disabled={!chat || !inputValue.trim()}>
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleSendMessage}
+          disabled={!chat || !inputValue.trim()}
+        >
           发送
         </button>
       </footer>
