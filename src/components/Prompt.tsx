@@ -63,8 +63,8 @@ const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
           />
         )}
         <div className={styles.buttons}>
-          <button className={styles.button} onClick={handleCancel}>Cancel</button>
-          <button className={styles.button} onClick={handleOk}>OK</button>
+          <button className={styles.buttonCancel} onClick={handleCancel}>Cancel</button>
+          <button className={styles.buttonOK} onClick={handleOk}>OK</button>
         </div>
       </div>
     </div>
@@ -95,7 +95,11 @@ const showNextPrompt = () => {
       showNextPrompt(); // Show next prompt in queue
     };
 
-    root.render(<Prompt {...options} onFinish={onFinish} />);
+    root.render(
+      <React.StrictMode>
+        <Prompt {...options} onFinish={onFinish} />
+      </React.StrictMode>
+    );
   }
 };
 
