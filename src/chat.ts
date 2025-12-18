@@ -37,7 +37,7 @@ class SGCC {
         'content-type': 'application/pgp-encrypted',
         'x-sgcc-to': key.getFingerprint().toUpperCase()
       },
-      body: res as Uint8Array<ArrayBuffer>
+      body: new Uint8Array(res)
     });
   }
   async watch(offset = 0n) {
