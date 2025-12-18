@@ -2,7 +2,7 @@ import React from 'react';
 import pLimit from 'p-limit';
 import { doDecrypt } from '../keystore';
 import type { ChatMessageRecord } from '../idbutils';
-import styles from './ChatWindow.module.scss';
+import styles from './ChatMessage.module.scss';
 
 interface ChatMessageProps {
   message: ChatMessageRecord;
