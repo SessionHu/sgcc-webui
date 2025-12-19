@@ -47,7 +47,7 @@ const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
             id="prompt-input"
             ref={textareaRef}
             className={`${styles.input} ${styles.textarea}`}
-            value={value}
+            //value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -57,7 +57,7 @@ const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
             ref={inputRef}
             type={type}
             className={styles.input}
-            value={value}
+            //value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
           />
