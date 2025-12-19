@@ -51,6 +51,7 @@
     outline: none;
     resize: none;
     height: 20px;
+    min-height: 20px;
     max-height: 5em;
     scrollbar-width: thin;
     white-space: pre;
@@ -63,7 +64,6 @@
   }
 
   button {
-    box-sizing: content-box;
     font-size: 14px;
     border: none;
     background-color: #8da4d5;

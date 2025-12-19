@@ -46,8 +46,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       <footer className={styles.chatInputArea}>
         <textarea
           placeholder="输入消息..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          //value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            e.target.style.height = e.target.value.split('\n').length * 15 + 'px';
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
