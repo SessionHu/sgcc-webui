@@ -4,7 +4,7 @@ import type * as openpgp from 'openpgp';
 
 import * as keystore from './keystore';
 import * as idbutils from './idbutils';
-import type { WindowMessageChatRecv } from './typings';
+import type { WindowMessageChatRecv, ChatMessageRecord } from './typings';
 
 function getAvatar(name: string, email?: string): string {
   if (email)
@@ -77,7 +77,7 @@ export class Chat {
   async sendMessage(message: Uint8Array) {
     const res = await sgcc.send(this.key, message);
     if (!res.ok) console.warn('Request failed! Code:' + res.status);
-    const r: idbutils.ChatMessageRecord = {
+    const r: ChatMessageRecord = {
       keyfp: this.key.getFingerprint().toUpperCase(),
       message,
       type: 'outgoing',
@@ -111,7 +111,7 @@ const limit = pLimit(16);
         const msgid = BigInt(p.msgid);
         const res = await keystore.doDecrypt(message);
         const keyfp = (await keystore.store.getKey(res.signatures[0]?.keyID.toHex()!))!.getFingerprint().toUpperCase();
-        const msgrecord: idbutils.ChatMessageRecord = {
+        const msgrecord: ChatMessageRecord = {
           keyfp,
           type: 'incoming',
           msgid,

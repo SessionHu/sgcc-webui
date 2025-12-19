@@ -1,7 +1,7 @@
 import React from 'react';
 import pLimit from 'p-limit';
 import { doDecrypt } from '../keystore';
-import type { ChatMessageRecord } from '../idbutils';
+import type { ChatMessageRecord } from '../typings';
 import styles from './ChatMessage.module.scss';
 
 interface ChatMessageProps {

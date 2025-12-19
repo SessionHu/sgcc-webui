@@ -2,7 +2,7 @@ import React from 'react';
 import ChatMessage from './ChatMessage';
 import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
-import type { ChatMessageRecord } from '../idbutils';
+import type { ChatMessageRecord } from '../typings';
 
 interface ChatWindowProps {
   chat: Chat | null;

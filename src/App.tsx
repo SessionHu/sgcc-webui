@@ -5,8 +5,7 @@ import { showPrompt } from './components/Prompt';
 import { store, addKeysFromArmored, doEncrypt } from './keystore';
 import { Chat } from './chat';
 import type { Key } from 'openpgp';
-import type { WindowMessage } from './typings';
-import type { ChatMessageRecord } from './idbutils';
+import type { WindowMessage, ChatMessageRecord  } from './typings';
 import styles from './App.module.scss';
 
 function App() {

@@ -1,4 +1,5 @@
 import { openDB } from 'idb';
+import type { ChatMessageRecord } from './typings';
 
 const db = await openDB('SGCCDB', 1, {
   upgrade(db) {
@@ -49,13 +50,6 @@ export const keystore = {
     return await db.delete('keystore', keyfp);
   }
 };
-
-export interface ChatMessageRecord {
-  msgid: bigint;
-  keyfp: string;
-  message: Uint8Array;
-  type: 'incoming' | 'outgoing';
-}
 
 const ZERO_LENGTH_32 = '0'.repeat(32);
 

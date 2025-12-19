@@ -1,4 +1,9 @@
-import type { ChatMessageRecord } from './idbutils';
+export interface ChatMessageRecord {
+  msgid: bigint;
+  keyfp: string;
+  message: Uint8Array;
+  type: 'incoming' | 'outgoing';
+}
 
 export type WindowMessage = WindowMessageChatRecv;
 
