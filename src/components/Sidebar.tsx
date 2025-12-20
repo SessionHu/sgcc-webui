@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span className="emoji-icon">+</span>
         </button>
         <button className={styles.toggleButton} onClick={toggleVisibility}>
-          <span className="emoji-icon">＞</span>
+          <span className="emoji-icon">&gt;</span>
         </button>
       </header>
       <ul className={styles.contactList}>
