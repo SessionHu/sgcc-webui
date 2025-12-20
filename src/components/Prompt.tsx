@@ -79,9 +79,7 @@ const promptQueue: {
 }[] = [];
 let isPromptActive = false;
 
-const container = document.createElement('div');
-document.body.appendChild(container);
-const root = createRoot(container);
+const root = createRoot(document.getElementById('prompt')!);
 
 const showNextPrompt = () => {
   if (promptQueue.length > 0 && !isPromptActive) {
