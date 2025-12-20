@@ -33,7 +33,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     <div className={`${styles.chatMain} ${isVisible ? styles.visible : ''}`}>
       <header className={styles.mainHeader}>
         <button className={styles.toggleButton} onClick={toggleVisibility}>
-          <span className="emoji-icon">＜</span>
+          <span className="emoji-icon">&lt;</span>
         </button>
         <h3>{chat ? chat.name : 'Select a contact'}</h3>
       </header>
@@ -46,7 +46,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       <footer className={styles.chatInputArea}>
         <textarea
           placeholder="输入消息..."
-          //value={inputValue}
+          value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
             e.target.style.height = e.target.value.split('\n').length * 15 + 'px';
