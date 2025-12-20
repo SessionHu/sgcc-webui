@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Key } from 'openpgp';
 import ContactItem from './ContactItem';
+import Menu from './Menu';
 import styles from './Sidebar.module.scss';
 
 interface SidebarProps {
@@ -16,13 +17,24 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeContact,
   onSelectContact, 
   onAddContact,
-  toggleVisibility
+  toggleVisibility,
 }) => {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  const onMenuClick = () => {
+    setMenuOpen(!menuOpen);
+  };
 
   return (
     <div className={styles.chatSidebar}>
       <header className={styles.sidebarHeader}>
         <h3>Contacts</h3>
+        <div>
+          <button className={styles.menuButton} onClick={onMenuClick}>
+            <span className="emoji-icon">≡</span>
+          </button>
+          {menuOpen && <Menu onClose={onMenuClick} />}
+        </div>
         <button className={styles.addButton} onClick={onAddContact}>
           <span className="emoji-icon">+</span>
         </button>

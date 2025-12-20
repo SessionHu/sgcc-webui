@@ -54,7 +54,6 @@ function App() {
         if (e.data.data.keyfp === currfp) {
           setMessages(prev => [...prev, e.data.data]);
         }
-        // TODO: Update last message for non-active chats in sidebar
         loadContacts();
       }
     };

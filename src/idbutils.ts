@@ -144,3 +144,73 @@ function bigIntFromRadix36(str: string): bigint {
   }
   return result;
 }
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export const dbutil = {
+  async exportDB(): Promise<string> {
+    const tx = db.transaction(['keystore', 'messages', 'myinfo'], 'readonly');
+    const keystoreData = await tx.objectStore('keystore').getAll();
+    const messagesData = await tx.objectStore('messages').getAll();
+    const myinfoData = await tx.objectStore('myinfo').get('myinfo');
+    await tx.done;
+    const exportData = {
+      keystore: keystoreData.map(({ keyfp, key }) => ({
+        keyfp,
+        key: uint8ArrayToBase64(key)
+      })),
+      messages: messagesData.map(msg => ({
+        ...msg,
+        message: uint8ArrayToBase64(msg.message)
+      })),
+      myinfo: myinfoData ? uint8ArrayToBase64(myinfoData) : null,
+    };
+    return JSON.stringify(exportData);
+  },
+  async importDB(jsonString: string): Promise<void> {
+    const importData = JSON.parse(jsonString);
+    const keystoreData = importData.keystore.map(({ keyfp, key }) => ({
+      keyfp,
+      key: base64ToUint8Array(key)
+    }));
+    const messagesData = importData.messages.map(msg => ({
+      ...msg,
+      message: base64ToUint8Array(msg.message)
+    }));
+    const myinfoData = importData.myinfo ? base64ToUint8Array(importData.myinfo) : null;
+    const tx = db.transaction(['keystore', 'messages', 'myinfo'], 'readwrite');
+    const keystoreStore = tx.objectStore('keystore');
+    const messagesStore = tx.objectStore('messages');
+    const myinfoStore = tx.objectStore('myinfo');
+    await keystoreStore.clear();
+    await messagesStore.clear();
+    await myinfoStore.clear();
+    for (const item of keystoreData) {
+      keystoreStore.put(item);
+    }
+    for (const item of messagesData) {
+      messagesStore.put(item);
+    }
+    if (myinfoData) {
+      myinfoStore.put(myinfoData, 'myinfo');
+    }
+    return tx.done;
+  }
+};

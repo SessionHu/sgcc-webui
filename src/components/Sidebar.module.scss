@@ -29,6 +29,10 @@
   @extend %base-button;
 }
 
+.menuButton {
+  @extend %base-button;
+}
+
 .toggleButton {
   @extend %base-button;
   display: none;
