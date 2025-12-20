@@ -6,21 +6,22 @@
   "scripts": {
     "dev": "vite --clearScreen=false",
     "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "idb": "^8.0.3",
-    "openpgp": "^6.2.2",
-    "p-limit": "^7.2.0",
-    "ts-md5": "^2.0.1"
+    "preview": "vite preview",
+    "lint": "tsc"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
+    "idb": "^8.0.3",
+    "openpgp": "^6.3.0",
+    "p-limit": "^7.2.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "typescript": "^5.9.2",
+    "sass-embedded": "^1.97.1",
+    "ts-md5": "^2.0.1",
+    "typescript": "^5.9.3",
     "vite": "^7.3.0"
-  }
+  },
+  "version": "0.0.0"
 }
