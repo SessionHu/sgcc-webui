@@ -23,14 +23,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   
-  const [prevScrollHeight, setPrevScrollHeight] = React.useState(0);
+  const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(0);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   const handleSendMessage = () => {
     if (!chat || !inputValue.trim()) return;
     onSendMessage(inputValue);
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 0);
     setInputValue('');
+    setPrevScrollHeight(null);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }));
   };
 
   React.useEffect(() => {
@@ -65,7 +66,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   React.useLayoutEffect(() => {
-    if (chat && messagesContainerRef.current)
+    if (chat && messagesContainerRef.current && prevScrollHeight !== null)
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevScrollHeight;
   }, [messages, prevScrollHeight]);
 
