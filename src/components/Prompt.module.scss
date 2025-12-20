@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../globals.scss' as globals;
 
 .overlay {
@@ -50,11 +51,13 @@
 }
 
 %button {
-  border: 1px solid globals.$border-color;
+  border: unset;//1px solid globals.$border-color;
   border-radius: 1em;
   line-height: 100%;
   margin-left: 10px;
   padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .buttonCancel {
@@ -63,4 +66,9 @@
 
 .buttonOK {
   @extend %button;
+  color: white;
+  background-color: globals.$accent-button-color;
+  &:hover {
+    background-color: color.adjust($color: globals.$accent-button-color, $lightness: -5%);
+  }
 }

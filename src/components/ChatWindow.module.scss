@@ -66,16 +66,15 @@
   button {
     font-size: 14px;
     border: none;
-    background-color: #8da4d5;
+    background-color: $accent-button-color;
     color: white;
     border-radius: 20px;
     padding: 8px 20px;
     margin-left: 12px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-
     &:hover {
-      background-color: color.adjust($color: #8da4d5, $lightness: -5%);
+      background-color: color.adjust($color: $accent-button-color, $lightness: -5%);
     }
   }
 }

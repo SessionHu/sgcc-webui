@@ -1,5 +1,4 @@
 @charset "utf-8";
-@use 'sass:color';
 
 // Variables
 $background-color: #f7f9fc;
@@ -13,6 +12,7 @@ $input-bg: #f0f2f5;
 $incoming-bubble: #e2f0fb;
 $outgoing-bubble: #dcf8c6;
 $font-family: system-ui, sans-serif;
+$accent-button-color: #8da4d5;
 
 // Global styles
 html, body {
