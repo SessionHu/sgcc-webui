@@ -2,32 +2,38 @@ import React from 'react';
 import ChatMessage from './ChatMessage';
 import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
-import type { DecryptedChatMessageRecord} from '../typings';
+import type { WindowMessage, DecryptedChatMessageRecord } from '../typings';
+import * as keystore from '../keystore';
 
 interface ChatWindowProps {
   chat: Chat | null;
-  messages: DecryptedChatMessageRecord[];
-  onSendMessage: (message: string) => void;
   isVisible: boolean;
   toggleVisibility: () => void;
-  onLoadMore: () => void;
-  hasMore: boolean;
-  isLoadingMore: boolean;
 }
 
+const MESSAGE_PAGE_SIZE = 30;
+
 const ChatWindow: React.FC<ChatWindowProps> = ({
-  chat, messages, onSendMessage, isVisible, toggleVisibility,
-  onLoadMore, hasMore, isLoadingMore
+  chat, isVisible, toggleVisibility,
 }) => {
   const [inputValue, setInputValue] = React.useState('');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   
   const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(0);
-  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
+
+  const [messages, setMessages] = React.useState<DecryptedChatMessageRecord[]>([]);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false);
 
   const handleSendMessage = () => {
     if (!chat || !inputValue.trim()) return;
+  const onSendMessage = async (messageContent: string) => {
+    if (!chat || !messageContent.trim()) return;
+    const message = await keystore.doEncrypt(chat.key, messageContent);
+    const msgrecord = await chat.sendMessage(message);
+    setMessages(prev => [...prev, { ...msgrecord, message: messageContent }]);
+  };
     onSendMessage(inputValue);
     setInputValue('');
     setPrevScrollHeight(null);
@@ -36,31 +42,80 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   React.useEffect(() => {
     if (!chat || !messagesContainerRef.current) return;
-    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    setIsInitialLoad(true);
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isAtBottom = scrollHeight - scrollTop < clientHeight + 100;
+    if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const fetchDecryptedMessages = async (chat: Chat, offset: bigint, limit: number) => {
+    const msgs = (await chat.fetchMessage(offset, limit)).reverse();
+    return Promise.all(msgs.map(async (e) => {
+      return {
+        ...e,
+        message: (await keystore.doDecrypt(e.message)).data
+      };
+    }));
+  }
+
+  // Handle incoming messages
+  React.useEffect(() => {
+    const handleMessage = async (e: MessageEvent<WindowMessage>) => {
+      if (e.data.type === 'chat-recv') {
+        const currfp = chat?.key.getFingerprint().toUpperCase();
+        if (e.data.data.keyfp === currfp) {
+          setMessages(prev => [...prev, e.data.data]);
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, [chat]);
 
   React.useEffect(() => {
-    if (!chat || !messagesContainerRef.current) return;
-    if (isInitialLoad && messages.length > 0) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      setIsInitialLoad(false);
-    } else {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop < clientHeight + 100;
-      if (isAtBottom) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!chat) return;
+    setHasMore(true);
+    (async () => {
+      setIsLoadingMore(true);
+      const history = await fetchDecryptedMessages(chat, BigInt(Date.now() + '000000000'), MESSAGE_PAGE_SIZE);
+      setMessages(history);
+      if (history.length < MESSAGE_PAGE_SIZE) {
+        setHasMore(false);
       }
-    }
-  }, [messages, isInitialLoad]);
+      setIsLoadingMore(false);
+      setTimeout(() => {
+        if (messagesContainerRef.current)
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      });
+    })();
+  }, [chat]);
 
+  const handleLoadMore = async () => {
+    if (!chat || !hasMore || isLoadingMore) return;
+    setIsLoadingMore(true);
+    const oldestMessageId = messages[0]?.msgid;
+    if (!oldestMessageId) {
+      setIsLoadingMore(false);
+      return;
+    }
+    const olderMessages = await fetchDecryptedMessages(chat, oldestMessageId, MESSAGE_PAGE_SIZE);
+    if (olderMessages.length > 0) {
+      // Prepend older messages
+      setMessages(prev => [...olderMessages, ...prev]);
+    }
+    if (olderMessages.length < MESSAGE_PAGE_SIZE) {
+      setHasMore(false);
+    }
+    setIsLoadingMore(false);
+  };
 
   const handleScroll = () => {
     if (chat && messagesContainerRef.current) {
       const { scrollTop } = messagesContainerRef.current;
       if (scrollTop < 5 && hasMore && !isLoadingMore) {
         setPrevScrollHeight(messagesContainerRef.current.scrollHeight);
-        onLoadMore();
+        handleLoadMore();
       }
     }
   };
