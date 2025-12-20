@@ -149,7 +149,7 @@ function uint8ArrayToBase64(bytes: Uint8Array): string {
   let binary = '';
   const len = bytes.byteLength;
   for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    binary += String.fromCharCode(bytes[i]!);
   }
   return btoa(binary);
 }
@@ -172,11 +172,11 @@ export const dbutil = {
     const myinfoData = await tx.objectStore('myinfo').get('myinfo');
     await tx.done;
     const exportData = {
-      keystore: keystoreData.map(({ keyfp, key }) => ({
+      keystore: keystoreData.map(({ keyfp, key }: { keyfp: string, key: Uint8Array }) => ({
         keyfp,
         key: uint8ArrayToBase64(key)
       })),
-      messages: messagesData.map(msg => ({
+      messages: messagesData.map((msg: { message: Uint8Array, [key:string]: any}) => ({
         ...msg,
         message: uint8ArrayToBase64(msg.message)
       })),
@@ -186,11 +186,11 @@ export const dbutil = {
   },
   async importDB(jsonString: string): Promise<void> {
     const importData = JSON.parse(jsonString);
-    const keystoreData = importData.keystore.map(({ keyfp, key }) => ({
+    const keystoreData = importData.keystore.map(({ keyfp, key }: { keyfp: string, key: string }) => ({
       keyfp,
       key: base64ToUint8Array(key)
     }));
-    const messagesData = importData.messages.map(msg => ({
+    const messagesData = importData.messages.map((msg: { message: string, [key:string]: any}) => ({
       ...msg,
       message: base64ToUint8Array(msg.message)
     }));
