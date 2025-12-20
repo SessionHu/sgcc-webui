@@ -22,7 +22,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [inputValue, setInputValue] = React.useState('');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
-  
+
   const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(null);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
@@ -91,7 +91,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           placeholder="输入消息..."
           value={inputValue}
           onChange={(e) => {
-            setInputValue(e.target.value); 
+            setInputValue(e.target.value);
             e.target.style.height = e.target.value.split('\n').length * 15 + 'px';
           }}
           onKeyDown={(e) => {

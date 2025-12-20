@@ -14,7 +14,7 @@ function App() {
   const [contacts, setContacts] = useState<Key[]>([]);
   const [activeContact, setActiveContact] = useState<Key | null>(null);
   const [isSidebarVisible, setSidebarVisible] = useState(true);
-  
+
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessageRecord[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -88,13 +88,13 @@ function App() {
       alert('Invalid keys format: ' + e);
     }
   };
-  
+
   const handleSendMessage = async (messageContent: string) => {
     if (!chat || !messageContent.trim()) return;
     const message = await doEncrypt(chat.key, messageContent);
     const msgrecord = await chat.sendMessage(message);
     setMessages(prev => [...prev, msgrecord]);
-    
+
   };
 
   const handleLoadMore = async () => {
@@ -126,7 +126,7 @@ function App() {
 
   return (
     <div className={styles.chatContainer}>
-      <Sidebar 
+      <Sidebar
         contacts={contacts}
         activeContact={activeContact}
         onSelectContact={(k) => {
@@ -136,7 +136,7 @@ function App() {
         onAddContact={handleAddContact}
         toggleVisibility={toggleSidebar}
       />
-      <ChatWindow 
+      <ChatWindow
         chat={chat}
         messages={messages}
         onSendMessage={handleSendMessage}

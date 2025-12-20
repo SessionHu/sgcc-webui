@@ -3,13 +3,13 @@ import type { ChatMessageRecord } from './typings';
 
 const db = await openDB('SGCCDB', 1, {
   upgrade(db) {
-    db.createObjectStore('keystore', { 
+    db.createObjectStore('keystore', {
       keyPath: 'keyfp'
     });
-    const messagesStore = db.createObjectStore('messages', { 
-      keyPath: 'msgid' 
+    const messagesStore = db.createObjectStore('messages', {
+      keyPath: 'msgid'
     });
-    messagesStore.createIndex('by_keyfp_and_msgid', ['keyfp', 'msgid']); 
+    messagesStore.createIndex('by_keyfp_and_msgid', ['keyfp', 'msgid']);
     db.createObjectStore('myinfo');
   },
 });
@@ -90,7 +90,6 @@ export const messages = {
     const tx = db.transaction('messages', 'readonly');
     if (keyfp) {
       const index = tx.objectStore('messages').index('by_keyfp_and_msgid');
-   
       const range = IDBKeyRange.bound([keyfp], [keyfp, MAX_36_KEY]);
       const cursor = await index.openCursor(range, 'prev');
       if (cursor) {

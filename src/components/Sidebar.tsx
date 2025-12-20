@@ -12,10 +12,10 @@ interface SidebarProps {
   toggleVisibility: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  contacts, 
+const Sidebar: React.FC<SidebarProps> = ({
+  contacts,
   activeContact,
-  onSelectContact, 
+  onSelectContact,
   onAddContact,
   toggleVisibility,
 }) => {
