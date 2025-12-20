@@ -6,7 +6,11 @@
   max-height: 800px;
   margin: 5dvh auto;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    8px 8px 24px rgba(0, 0, 0, .02),
+    8px -8px 24px rgba(0, 0, 0, .02),
+    -8px 8px 24px rgba(0, 0, 0, .02),
+    -8px -8px 24px rgba(0, 0, 0, .02);
   overflow: hidden;
 }
 

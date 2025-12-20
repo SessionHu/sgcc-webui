@@ -35,7 +35,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <button className={styles.toggleButton} onClick={toggleVisibility}>
           <span className="emoji-icon">&lt;</span>
         </button>
-        <h3>{chat ? chat.name : 'Select a contact'}</h3>
+        <h3>{chat && chat.name}</h3>
       </header>
       <div className={styles.chatMessages}>
         {messages.map((msg) => (
