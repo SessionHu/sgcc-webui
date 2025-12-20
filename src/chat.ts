@@ -120,7 +120,10 @@ const limit = pLimit(16);
         idbutils.messages.addMessage(msgrecord);
         window.postMessage({
           type: 'chat-recv',
-          data: msgrecord
+          data: {
+            ...msgrecord,
+            message: res.data
+          }
         } as WindowMessageChatRecv);
         offset = msgid;
       }

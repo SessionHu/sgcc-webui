@@ -2,11 +2,11 @@ import React from 'react';
 import ChatMessage from './ChatMessage';
 import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
-import type { ChatMessageRecord } from '../typings';
+import type { DecryptedChatMessageRecord} from '../typings';
 
 interface ChatWindowProps {
   chat: Chat | null;
-  messages: ChatMessageRecord[];
+  messages: DecryptedChatMessageRecord[];
   onSendMessage: (message: string) => void;
   isVisible: boolean;
   toggleVisibility: () => void;
@@ -22,27 +22,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [inputValue, setInputValue] = React.useState('');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
-
-  const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(null);
+  
+  const [prevScrollHeight, setPrevScrollHeight] = React.useState(0);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+    if (!chat || !inputValue.trim()) return;
     onSendMessage(inputValue);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 0);
     setInputValue('');
   };
 
   React.useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    if (!chat || !messagesContainerRef.current) return;
+    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     setIsInitialLoad(true);
   }, [chat]);
 
   React.useEffect(() => {
+    if (!chat || !messagesContainerRef.current) return;
     if (isInitialLoad && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
       setIsInitialLoad(false);
-    } else if (messagesContainerRef.current) {
+    } else {
       const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
       const isAtBottom = scrollHeight - scrollTop < clientHeight + 100;
       if (isAtBottom) {
@@ -53,7 +55,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
 
   const handleScroll = () => {
-    if (messagesContainerRef.current) {
+    if (chat && messagesContainerRef.current) {
       const { scrollTop } = messagesContainerRef.current;
       if (scrollTop < 5 && hasMore && !isLoadingMore) {
         setPrevScrollHeight(messagesContainerRef.current.scrollHeight);
@@ -63,10 +65,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   React.useLayoutEffect(() => {
-    if (prevScrollHeight !== null && messagesContainerRef.current) {
+    if (chat && messagesContainerRef.current)
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevScrollHeight;
-      setPrevScrollHeight(null);
-    }
   }, [messages, prevScrollHeight]);
 
 

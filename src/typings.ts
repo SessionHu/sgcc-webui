@@ -5,6 +5,10 @@ export interface ChatMessageRecord {
   type: 'incoming' | 'outgoing';
 }
 
+export interface DecryptedChatMessageRecord extends Omit<ChatMessageRecord, 'message'> {
+  message: string;
+}
+
 export type WindowMessage = WindowMessageChatRecv;
 
 export interface WindowMessageBase {
@@ -14,5 +18,5 @@ export interface WindowMessageBase {
 
 export interface WindowMessageChatRecv extends WindowMessageBase {
   type: "chat-recv",
-  data: ChatMessageRecord
+  data: DecryptedChatMessageRecord
 }
