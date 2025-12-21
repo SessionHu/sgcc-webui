@@ -1,25 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Key } from 'openpgp';
 import ContactItem from './ContactItem';
 import Menu from './Menu';
 import styles from './Sidebar.module.scss';
+import { store, addKeysFromArmored } from '../keystore';
+import { showPrompt } from './Prompt';
 
 interface SidebarProps {
-  contacts: Key[];
   activeContact: Key | null;
   onSelectContact: (key: Key) => void;
-  onAddContact: () => Promise<void>;
   toggleVisibility: () => void;
+  onContactsLoaded: (contacts: Key[]) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  contacts,
   activeContact,
   onSelectContact,
-  onAddContact,
   toggleVisibility,
+  onContactsLoaded,
 }) => {
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [contacts, setContacts] = useState<Key[]>([]);
+
+  // Load contacts on mount
+  const loadContacts = async () => {
+    try {
+      const keys = await store.getAllKeys();
+      setContacts(keys);
+      onContactsLoaded(keys);
+    } catch (error) {
+      console.error("Failed to load contacts:", error);
+    }
+  };
+  useEffect(() => {
+    loadContacts();
+  }, []);
+
+  const handleAddContact = async () => {
+    try {
+      const armoredKeys = await showPrompt({
+        label: 'Enter keys in ASCII-armored format:',
+        title: 'Add contact',
+        type: 'multiline'
+      });
+      if (armoredKeys) {
+        await addKeysFromArmored(armoredKeys);
+        await loadContacts();
+      }
+    } catch (e) {
+      console.warn(e);
+      alert('Invalid keys format: ' + e);
+    }
+  };
 
   const onMenuClick = () => {
     setMenuOpen(!menuOpen);
@@ -35,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
           {menuOpen && <Menu onClose={onMenuClick} />}
         </div>
-        <button className={styles.addButton} onClick={onAddContact}>
+        <button className={styles.addButton} onClick={handleAddContact}>
           <span className="emoji-icon">+</span>
         </button>
         <button className={styles.toggleButton} onClick={toggleVisibility}>
