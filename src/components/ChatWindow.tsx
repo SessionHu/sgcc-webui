@@ -25,16 +25,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [messages, setMessages] = React.useState<DecryptedChatMessageRecord[]>([]);
   const [hasMore, setHasMore] = React.useState(true);
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!chat || !inputValue.trim()) return;
-  const onSendMessage = async (messageContent: string) => {
-    if (!chat || !messageContent.trim()) return;
-    const message = await keystore.doEncrypt(chat.key, messageContent);
+    const message = await keystore.doEncrypt(chat.key, inputValue);
     const msgrecord = await chat.sendMessage(message);
-    setMessages(prev => [...prev, { ...msgrecord, message: messageContent }]);
-  };
-    onSendMessage(inputValue);
+    setMessages(prev => [...prev, { ...msgrecord, message: inputValue }]);
     setInputValue('');
     setPrevScrollHeight(null);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }));
@@ -44,8 +41,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!chat || !messagesContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isAtBottom = scrollHeight - scrollTop < clientHeight + 100;
-    if (isAtBottom) {
+    if (messages.length && isAtBottom && !isInitialLoading) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else if (messages.length && messagesContainerRef.current && isInitialLoading) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight,
+      setIsInitialLoading(false);
     }
   }, [messages]);
 
@@ -57,7 +57,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         message: (await keystore.doDecrypt(e.message)).data
       };
     }));
-  }
+  };
 
   // Handle incoming messages
   React.useEffect(() => {
@@ -76,6 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   React.useEffect(() => {
     if (!chat) return;
     setHasMore(true);
+    setIsInitialLoading(true);
     (async () => {
       setIsLoadingMore(true);
       const history = await fetchDecryptedMessages(chat, BigInt(Date.now() + '000000000'), MESSAGE_PAGE_SIZE);
@@ -84,10 +85,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         setHasMore(false);
       }
       setIsLoadingMore(false);
-      setTimeout(() => {
-        if (messagesContainerRef.current)
-          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      });
     })();
   }, [chat]);
 
@@ -120,7 +117,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     if (chat && messagesContainerRef.current && prevScrollHeight !== null)
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevScrollHeight;
   }, [messages, prevScrollHeight]);

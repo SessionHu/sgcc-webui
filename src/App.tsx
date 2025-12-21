@@ -55,7 +55,6 @@ function App() {
     }
   };
 
-
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
   };
