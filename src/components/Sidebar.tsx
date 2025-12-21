@@ -5,6 +5,7 @@ import Menu from './Menu';
 import styles from './Sidebar.module.scss';
 import { store, addKeysFromArmored } from '../keystore';
 import { showPrompt } from './Prompt';
+import { showAlert } from './Alert';
 
 interface SidebarProps {
   activeContact: Key | null;
@@ -49,7 +50,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       }
     } catch (e) {
       console.warn(e);
-      alert('Invalid keys format: ' + e);
+      showAlert({
+        title: 'Error adding contact',
+        message: 'Invalid keys format: ' + e
+      });
     }
   };
 

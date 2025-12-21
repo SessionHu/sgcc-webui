@@ -1,6 +1,7 @@
 import * as openpgp from 'openpgp';
 import * as idbutils from './idbutils';
 import { showPrompt } from './components/Prompt';
+import { showAlert } from './components/Alert';
 
 export const store = {
   async getKey(fpOrId: string) {
@@ -44,15 +45,24 @@ const privatekey: openpgp.PrivateKey = await (async () => {
         type: 'multiline',
       });
       if (armoredKey === null) {
-        alert('Private key input cancelled. Cannot proceed without a private key.');
+        await showAlert({
+          title: 'Error',
+          message: 'Private key input cancelled. Cannot proceed without a private key.'
+        });
         continue;
       }
       const k = await openpgp.readPrivateKey({ armoredKey });
       idbutils.myinfo.setMyinfo(k.write()).catch(console.warn);
-      alert('Welcome back! ' + k.users[0]?.userID?.userID);
+      await showAlert({
+        title: 'Welcome',
+        message: 'Welcome back! ' + k.users[0]?.userID?.userID
+      });
       return k;
     } catch (e) {
-      alert('Invalid private key: ' + String(e));
+      await showAlert({
+        title: 'Error',
+        message: 'Invalid private key: ' + String(e)
+      });
       console.warn(e);
     }
 })();
@@ -92,7 +102,10 @@ const getMyDecryptedPrivateKey = (() => {
       });
       return decryptedKey;
     } catch (e) {
-      alert('Invalid passphrase: ' + String(e));
+      await showAlert({
+        title: 'Error',
+        message: 'Invalid passphrase: ' + String(e)
+      });
       console.warn(e);
       return promptAndDecrypt(); // Re-prompt on failure
     }

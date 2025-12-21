@@ -101,7 +101,7 @@ const showNextPrompt = () => {
   }
 };
 
-export const showPrompt = (options: PromptOptions): Promise<string | null> => {
+export const showPrompt = async (options: PromptOptions): Promise<string | null> => {
   return new Promise((resolve) => {
     promptQueue.push({ options, resolve });
     showNextPrompt();

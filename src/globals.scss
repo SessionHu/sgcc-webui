@@ -1,5 +1,27 @@
 @charset "utf-8";
 
+@use 'sass:color';
+
+@keyframes fadeIn {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 // Variables
 $background-color: #f7f9fc;
 $sidebar-bg: #eef2f8;

@@ -15,11 +15,12 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-.prompt {
+.alert {
   background-color: globals.$background-color;
   padding: 20px;
   border-radius: 8px;
   min-width: 300px;
+  max-width: 80%;
   animation: scaleIn 0.2s ease-out;
 }
 
@@ -27,25 +28,9 @@
   margin-top: 0;
 }
 
-.label {
-  display: block;
+.message {
   margin-bottom: 10px;
-}
-
-.input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid globals.$border-color;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-family: monospace, globals.$font-family;
-  background-color: transparent;
-}
-
-.textarea {
-  min-height: 100px;
-  min-width: 100%;
-  //resize: vertical;
+  white-space: pre-wrap;
 }
 
 .buttons {
@@ -54,17 +39,13 @@
 }
 
 %button {
-  border: unset;//1px solid globals.$border-color;
+  border: unset;
   border-radius: 1em;
   line-height: 100%;
   margin-left: 10px;
   padding: 4px 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
-
-.buttonCancel {
-  @extend %button;
 }
 
 .buttonOK {
