@@ -76,7 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     const handleMessage = async (e: MessageEvent<WindowMessage>) => {
       if (e.data.type === 'chat-recv') {
         const res = await keystore.doDecrypt(e.data.data.message);
-        const reskeyid = res.signatures[0]?.keyID.bytes;
+        const reskeyid = res.signatures[0]?.keyID.toHex();
         if (!reskeyid) return;
         const reskeyfp = (await keystore.store.getKey(reskeyid))?.getFingerprint().toUpperCase()
         const currfp = chat?.key.getFingerprint().toUpperCase();
