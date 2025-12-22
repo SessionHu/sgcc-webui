@@ -4,7 +4,7 @@
   "type": "module",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "dev": "vite --clearScreen=false",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc"
@@ -22,6 +22,5 @@
     "ts-md5": "^2.0.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.0"
-  },
-  "version": "0.0.0"
+  }
 }
