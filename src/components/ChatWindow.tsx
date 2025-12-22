@@ -28,13 +28,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
+  let sendinglock = false;
   const handleSendMessage = async () => {
-    if (!chat || !inputValue.trim()) return;
+    if (!chat || !inputValue.trim() || sendinglock) return;
+    sendinglock = true;
     const message = await keystore.doEncrypt(chat.key, inputValue);
     let msgrecord: ChatMessageRecord;
     try {
       msgrecord = await chat.sendMessage(message);
     } catch (e) {
+      sendinglock = false;
       console.error('Message send failed', e);
       return showAlert({
         title: 'Error',
@@ -47,6 +50,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     setInputValue('');
     setPrevScrollHeight(null);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }));
+    sendinglock = false;
   };
 
   React.useEffect(() => {
