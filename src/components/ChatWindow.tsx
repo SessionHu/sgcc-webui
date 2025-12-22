@@ -1,8 +1,9 @@
 import React from 'react';
 import ChatMessage from './ChatMessage';
+import { showAlert } from './Alert';
 import styles from './ChatWindow.module.scss';
 import type { Chat } from '../chat';
-import type { WindowMessage, DecryptedChatMessageRecord } from '../typings';
+import type { WindowMessage, DecryptedChatMessageRecord, ChatMessageRecord } from '../typings';
 import * as keystore from '../keystore';
 
 interface ChatWindowProps {
@@ -30,8 +31,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleSendMessage = async () => {
     if (!chat || !inputValue.trim()) return;
     const message = await keystore.doEncrypt(chat.key, inputValue);
-    const msgrecord = await chat.sendMessage(message);
-    setMessages(prev => [...prev, { ...msgrecord, message: inputValue }]);
+    let msgrecord: ChatMessageRecord;
+    try {
+      msgrecord = await chat.sendMessage(message);
+    } catch (e) {
+      console.error('Message send failed', e);
+      return showAlert({
+        title: 'Error',
+        message: 'Message send failed: ' + e,
+      });
+    }
+    setMessages(prev => [...prev, {
+      ...msgrecord, message: { data: inputValue }
+    }]);
     setInputValue('');
     setPrevScrollHeight(null);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }));
@@ -54,8 +66,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     return Promise.all(msgs.map(async (e) => {
       return {
         ...e,
-        message: (await keystore.doDecrypt(e.message)).data
-      };
+        message: await keystore.doDecrypt(e.message)
+      } as DecryptedChatMessageRecord;
     }));
   };
 
@@ -63,9 +75,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   React.useEffect(() => {
     const handleMessage = async (e: MessageEvent<WindowMessage>) => {
       if (e.data.type === 'chat-recv') {
+        const res = await keystore.doDecrypt(e.data.data.message);
+        const reskeyid = res.signatures[0]?.keyID.bytes;
+        if (!reskeyid) return;
+        const reskeyfp = (await keystore.store.getKey(reskeyid))?.getFingerprint().toUpperCase()
         const currfp = chat?.key.getFingerprint().toUpperCase();
-        if (e.data.data.keyfp === currfp) {
-          setMessages(prev => [...prev, e.data.data]);
+        if (reskeyfp === currfp) {
+          setMessages(prev => [...prev, {
+            ...e.data.data,
+            message: res,
+            keyfp: reskeyid
+          }]);
         }
       }
     };

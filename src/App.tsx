@@ -20,16 +20,6 @@ function App() {
     setSidebarVisible(!isSidebarVisible);
   };
 
-  const handleContactsLoaded = (contacts: Key[]) => {
-    if (contacts.length > 0) {
-      if (!activeContact) {
-        setActiveContact(contacts[0]!);
-      }
-    } else {
-      setActiveContact(null);
-    }
-  };
-
   return (
     <div className={styles.chatContainer}>
       <Sidebar
@@ -39,7 +29,6 @@ function App() {
           toggleSidebar();
         }}
         toggleVisibility={toggleSidebar}
-        onContactsLoaded={handleContactsLoaded}
       />
       <ChatWindow
         chat={chat}

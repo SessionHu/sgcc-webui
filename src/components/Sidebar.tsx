@@ -11,14 +11,12 @@ interface SidebarProps {
   activeContact: Key | null;
   onSelectContact: (key: Key) => void;
   toggleVisibility: () => void;
-  onContactsLoaded: (contacts: Key[]) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   activeContact,
   onSelectContact,
   toggleVisibility,
-  onContactsLoaded,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [contacts, setContacts] = useState<Key[]>([]);
@@ -28,7 +26,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     try {
       const keys = await store.getAllKeys();
       setContacts(keys);
-      onContactsLoaded(keys);
     } catch (error) {
       console.error("Failed to load contacts:", error);
     }

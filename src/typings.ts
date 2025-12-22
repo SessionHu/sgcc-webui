@@ -1,3 +1,5 @@
+import type { DecryptMessageResult } from "openpgp";
+
 export interface ChatMessageRecord {
   msgid: bigint;
   keyfp: string;
@@ -5,8 +7,10 @@ export interface ChatMessageRecord {
   type: 'incoming' | 'outgoing';
 }
 
+export interface RawChatMessageRecord extends Omit<ChatMessageRecord, 'keyfp'> {}
+
 export interface DecryptedChatMessageRecord extends Omit<ChatMessageRecord, 'message'> {
-  message: string;
+  message: DecryptMessageResult | { data: string };
 }
 
 export type WindowMessage = WindowMessageChatRecv;
@@ -18,5 +22,5 @@ export interface WindowMessageBase {
 
 export interface WindowMessageChatRecv extends WindowMessageBase {
   type: "chat-recv",
-  data: DecryptedChatMessageRecord
+  data: RawChatMessageRecord
 }
