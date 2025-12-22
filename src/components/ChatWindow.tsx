@@ -80,11 +80,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         if (!reskeyid) return;
         const reskeyfp = (await keystore.store.getKey(reskeyid))?.getFingerprint().toUpperCase()
         const currfp = chat?.key.getFingerprint().toUpperCase();
-        if (reskeyfp === currfp) {
+        if (reskeyfp && reskeyfp === currfp) {
           setMessages(prev => [...prev, {
             ...e.data.data,
             message: res,
-            keyfp: reskeyid
+            keyfp: reskeyfp
           }]);
         }
       }
