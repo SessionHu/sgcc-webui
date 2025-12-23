@@ -9,7 +9,7 @@ import * as keystore from '../keystore';
 interface ChatWindowProps {
   chat: Chat | null;
   isVisible: boolean;
-  toggleVisibility: () => void;
+  toggleVisibility: (isVisible?: boolean) => void;
 }
 
 const MESSAGE_PAGE_SIZE = 30;
@@ -60,7 +60,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!chat || !messagesContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isAtBottom = scrollHeight - scrollTop < clientHeight + 100;
-    if (messages.length && isAtBottom && !isInitialLoading) {
+    if (messages.length && isAtBottom && !isInitialLoading && isVisible) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } else if (messages.length && messagesContainerRef.current && isInitialLoading) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight,
@@ -153,7 +153,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   return (
     <div className={`${styles.chatMain} ${isVisible ? styles.visible : ''}`}>
       <header className={styles.mainHeader}>
-        <button className={styles.toggleButton} onClick={toggleVisibility}>
+        <button className={styles.toggleButton} onClick={() => toggleVisibility(false)}>
           <span className="emoji-icon">&lt;</span>
         </button>
         <h3>{chat && chat.name}</h3>

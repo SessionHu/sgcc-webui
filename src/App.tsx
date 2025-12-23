@@ -7,7 +7,7 @@ import styles from './App.module.scss';
 
 function App() {
   const [activeContact, setActiveContact] = useState<Key | null>(null);
-  const [isSidebarVisible, setSidebarVisible] = useState(true);
+  const [isChatWindowVisible, setChatWindowVisible] = useState(false);
 
   const [chat, setChat] = useState<Chat | null>(null);
 
@@ -16,8 +16,8 @@ function App() {
     setChat(activeContact ? new Chat(activeContact) : null);
   }, [activeContact]);
 
-  const toggleSidebar = () => {
-    setSidebarVisible(!isSidebarVisible);
+  const toggleSidebar = (isVisible?: boolean) => {
+    setChatWindowVisible(isVisible ?? !isChatWindowVisible);
   };
 
   return (
@@ -26,13 +26,13 @@ function App() {
         activeContact={activeContact}
         onSelectContact={(k) => {
           setActiveContact(k);
-          toggleSidebar();
+          toggleSidebar(true);
         }}
         toggleVisibility={toggleSidebar}
       />
       <ChatWindow
         chat={chat}
-        isVisible={!isSidebarVisible || window.innerWidth > 768}
+        isVisible={isChatWindowVisible}
         toggleVisibility={toggleSidebar}
       />
     </div>

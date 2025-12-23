@@ -10,7 +10,7 @@ import { showAlert } from './Alert';
 interface SidebarProps {
   activeContact: Key | null;
   onSelectContact: (key: Key) => void;
-  toggleVisibility: () => void;
+  toggleVisibility: (isVisible?: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button className={styles.addButton} onClick={handleAddContact}>
           <span className="emoji-icon">+</span>
         </button>
-        <button className={styles.toggleButton} onClick={toggleVisibility}>
+        <button className={styles.toggleButton} onClick={() => toggleVisibility(true)}>
           <span className="emoji-icon">&gt;</span>
         </button>
       </header>
