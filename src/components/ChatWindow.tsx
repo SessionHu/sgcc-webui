@@ -17,9 +17,9 @@ const MESSAGE_PAGE_SIZE = 30;
 const ChatWindow: React.FC<ChatWindowProps> = ({
   chat, isVisible, toggleVisibility,
 }) => {
-  const [inputValue, setInputValue] = React.useState('');
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
+  const textaeraRef = React.useRef<HTMLTextAreaElement>(null);
   
   const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(0);
 
@@ -30,9 +30,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   let sendinglock = false;
   const handleSendMessage = async () => {
-    if (!chat || !inputValue.trim() || sendinglock) return;
+    if (!chat || !textaeraRef.current || sendinglock) return;
+    const ival = textaeraRef.current.value;
+    if (!ival.trim()) return;
     sendinglock = true;
-    const message = await keystore.doEncrypt(chat.key, inputValue);
+    const message = await keystore.doEncrypt(chat.key, ival);
     let msgrecord: ChatMessageRecord;
     try {
       msgrecord = await chat.sendMessage(message);
@@ -45,10 +47,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       });
     }
     setMessages(prev => [...prev, {
-      ...msgrecord, message: { data: inputValue }
+      ...msgrecord, message: { data: ival }
     }]);
-    setInputValue('');
     setPrevScrollHeight(null);
+    textaeraRef.current.value = '';
+    textaeraRef.current.style.height = '';
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }));
     sendinglock = false;
   };
@@ -166,9 +169,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       <footer className={styles.chatInputArea}>
         <textarea
           placeholder="输入消息..."
-          value={inputValue}
           onChange={(e) => {
-            setInputValue(e.target.value);
             e.target.style.height = e.target.value.split('\n').length * 15 + 'px';
           }}
           onKeyDown={(e) => {
@@ -178,11 +179,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             }
           }}
           disabled={!chat}
+          ref={textaeraRef}
         />
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSendMessage}
-          disabled={!chat || !inputValue.trim()}
+          disabled={!chat}
         >
           发送
         </button>
