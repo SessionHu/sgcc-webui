@@ -4,7 +4,7 @@ import type * as openpgp from 'openpgp';
 
 import * as keystore from './keystore';
 import * as idbutils from './idbutils';
-import type { WindowMessageChatRecv, ChatMessageRecord } from './typings';
+import type { ChatMessageRecord, WindowMessageChatRecv } from './typings';
 
 function getAvatar(name: string, email?: string): string {
   if (email)
@@ -83,7 +83,7 @@ export class Chat {
       type: 'outgoing',
       msgid: BigInt((await res.text()).trim())
     };
-    idbutils.messages.addMessage(r);
+    await idbutils.messages.addMessage(r);
     return r;
   }
   async fetchMessage(offset: bigint, limit: number) {
@@ -109,18 +109,13 @@ const limit = pLimit(16);
       for await (const p of messagePromises) {
         const message = p.msgbody;
         const msgid = BigInt(p.msgid);
-        const res = await keystore.doDecrypt(message);
-        const keyfp = (await keystore.store.getKey(res.signatures[0]?.keyID.toHex()!))!.getFingerprint().toUpperCase();
-        const msgrecord: ChatMessageRecord = {
-          keyfp,
-          type: 'incoming',
-          msgid,
-          message
-        };
-        idbutils.messages.addMessage(msgrecord);
         window.postMessage({
           type: 'chat-recv',
-          data: msgrecord,
+          data: {
+            type: 'incoming',
+            msgid,
+            message
+          },
         } as WindowMessageChatRecv);
         offset = msgid;
       }

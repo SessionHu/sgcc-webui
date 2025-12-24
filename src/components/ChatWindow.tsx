@@ -2,6 +2,7 @@ import React from 'react';
 import ChatMessage from './ChatMessage';
 import { showAlert } from './Alert';
 import styles from './ChatWindow.module.scss';
+import * as idbutils from '../idbutils';
 import type { Chat } from '../chat';
 import type { WindowMessage, DecryptedChatMessageRecord, ChatMessageRecord } from '../typings';
 import * as keystore from '../keystore';
@@ -81,19 +82,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   // Handle incoming messages
   React.useEffect(() => {
     const handleMessage = async (e: MessageEvent<WindowMessage>) => {
-      if (e.data.type === 'chat-recv') {
-        const res = await keystore.doDecrypt(e.data.data.message);
+      const d = e.data;
+      if (d.type === 'chat-recv') {
+        const res = await keystore.doDecrypt(d.data.message);
         const reskeyid = res.signatures[0]?.keyID.toHex();
         if (!reskeyid) return;
         const reskeyfp = (await keystore.store.getKey(reskeyid))?.getFingerprint().toUpperCase()
+        if (!reskeyfp) return;
+        await idbutils.messages.addMessage({
+          ...d.data,
+          keyfp: reskeyfp
+        });
         const currfp = chat?.key.getFingerprint().toUpperCase();
-        if (reskeyfp && reskeyfp === currfp) {
-          setMessages(prev => [...prev, {
-            ...e.data.data,
-            message: res,
-            keyfp: reskeyfp
-          }]);
-        }
+        if (reskeyfp !== currfp) return;
+        setMessages(prev => [...prev, {
+          ...d.data,
+          message: res,
+          keyfp: reskeyfp
+        }]);
       }
     };
     window.addEventListener('message', handleMessage);

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import type { Key } from 'openpgp';
-import ContactItem from './ContactItem';
+import React from 'react';
 import Menu from './Menu';
 import styles from './Sidebar.module.scss';
-import { store, addKeysFromArmored } from '../keystore';
 import { showPrompt } from './Prompt';
 import { showAlert } from './Alert';
+import { Chat } from '../chat';
+import { store, addKeysFromArmored } from '../keystore';
+import { doDecrypt } from '../keystore';
+import type { Key } from 'openpgp';
+import type { WindowMessage } from '../typings';
 
 interface SidebarProps {
   activeContact: Key | null;
@@ -18,21 +20,44 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectContact,
   toggleVisibility,
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [contacts, setContacts] = useState<Key[]>([]);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [contacts, setContacts] = React.useState<{
+    avatar: string,
+    name: string,
+    active: boolean,
+    msg: string,
+    key: Key
+  }[]>([]);
 
   // Load contacts on mount
-  const loadContacts = async () => {
+  const loadContacts = React.useCallback(async () => {
     try {
       const keys = await store.getAllKeys();
-      setContacts(keys);
+      setContacts(await Promise.all(keys.map(async (key) => {
+        const c = new Chat(key);
+        const m = await c.lastMessage();
+        return {
+          avatar: c.avatar,
+          name: c.name,
+          active: key.getFingerprint() === activeContact?.getFingerprint(),
+          key,
+          msg: m ? (await doDecrypt(m.message)).data : ''
+        };
+      })));
     } catch (error) {
       console.error("Failed to load contacts:", error);
     }
-  };
-  useEffect(() => {
+  }, [activeContact]);
+  React.useEffect(() => {
     loadContacts();
-  }, []);
+    const handleMessage = async (e: MessageEvent<WindowMessage>) => {
+      if (e.data.type === 'idb-msg-update') {
+        await loadContacts();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [loadContacts]);
 
   const handleAddContact = async () => {
     try {
@@ -47,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       }
     } catch (e) {
       console.warn(e);
-      showAlert({
+      await showAlert({
         title: 'Error adding contact',
         message: 'Invalid keys format: ' + e
       });
@@ -76,13 +101,22 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </header>
       <ul className={styles.contactList}>
-        {contacts.map((contact) => (
-          <ContactItem
-            key={contact.getFingerprint()}
-            contact={contact}
-            isActive={activeContact?.getFingerprint() === contact.getFingerprint()}
-            onSelect={() => onSelectContact(contact)}
-          />
+        {contacts.map((e) => (
+          <li
+            key={e.key.getFingerprint()}
+            className={`${styles.contactItem} ${e.active ? styles.active : ''}`}
+            onClick={() => onSelectContact(e.key)}
+            tabIndex={0}
+            role="button"
+          >
+            <div className={styles.avatar}>
+              <img src={e.avatar} alt={`${e.name}'s avatar`} />
+            </div>
+            <div className={styles.contactInfo}>
+              <span className={styles.contactName}>{e.name}</span>
+              <span className={styles.lastMessage}>{e.msg}</span>
+            </div>
+          </li>
         ))}
       </ul>
     </div>

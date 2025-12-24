@@ -1,5 +1,5 @@
 import { openDB } from 'idb';
-import type { ChatMessageRecord } from './typings';
+import type { ChatMessageRecord, WindowMessageIdbMsgUpdate } from './typings';
 
 const db = await openDB('SGCCDB', 1, {
   upgrade(db) {
@@ -55,10 +55,13 @@ const ZERO_LENGTH_32 = '0'.repeat(32);
 
 export const messages = {
   async addMessage(cmr: ChatMessageRecord) {
-    return await db.put('messages', {
+    await db.put('messages', {
       ...cmr,
       msgid: cmr.msgid.toString(36).padStart(32, '0')
     });
+    window.postMessage({
+      type: 'idb-msg-update'
+    } as WindowMessageIdbMsgUpdate);
   },
   async getMessagesBeforeOffset(keyfp: string, offsetMsgid: bigint, limit: number): Promise<ChatMessageRecord[]> {
     const tx = db.transaction('messages', 'readonly');

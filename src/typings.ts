@@ -13,14 +13,19 @@ export interface DecryptedChatMessageRecord extends Omit<ChatMessageRecord, 'mes
   message: DecryptMessageResult | { data: string };
 }
 
-export type WindowMessage = WindowMessageChatRecv;
+export type WindowMessage = WindowMessageChatRecv | WindowMessageIdbMsgUpdate;
 
 export interface WindowMessageBase {
   type: string,
-  data: any
+  data: unknown
 }
 
 export interface WindowMessageChatRecv extends WindowMessageBase {
   type: "chat-recv",
   data: RawChatMessageRecord
+}
+
+export interface WindowMessageIdbMsgUpdate extends WindowMessageBase {
+  type: 'idb-msg-update',
+  data: void
 }

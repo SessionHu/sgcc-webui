@@ -1,6 +1,8 @@
 @use 'sass:color';
 @use '../globals.scss' as *; // Import variables
 
+// sidebar
+
 .chatSidebar {
   flex: 0 0 350px;
   background-color: $sidebar-bg;
@@ -38,7 +40,6 @@
   display: none;
 }
 
-
 @media (max-width: 768px) {
   .toggleButton {
      display: block;
@@ -47,7 +48,59 @@
   .chatSidebar {
     border-right: none;
     min-width: 100%;
-    // The hidden logic is now handled by class toggling in the component
-    // So we don't need transform rules here.
   }
+}
+
+// contact item
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid $border-color;
+  transition: background-color 0.2s ease;
+
+  &:hover,
+  &:focus {
+    background-color: color.adjust($sidebar-bg, $lightness: -3%);
+  }
+
+  &.active {
+    background-color: $active-item;
+  }
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  background-color: #ccc;
+  border-radius: 50%;
+  margin-right: 15px;
+  overflow: hidden;
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // Fix for text-overflow
+}
+
+.contactName {
+  font-weight: 600;
+  color: $text-color;
+}
+
+.lastMessage {
+  font-size: 13px;
+  color: $secondary-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
