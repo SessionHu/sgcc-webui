@@ -174,7 +174,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
       <footer className={styles.chatInputArea}>
         <textarea
-          placeholder="输入消息..."
+          placeholder="Input your message..."
           onChange={(e) => {
             e.target.style.height = e.target.value.split('\n').length * 15 + 'px';
           }}
@@ -191,8 +191,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSendMessage}
           disabled={!chat}
+          title='Ctrl+Enter'
         >
-          发送
+          Send
         </button>
       </footer>
     </div>
