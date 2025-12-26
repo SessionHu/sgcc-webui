@@ -1,5 +1,5 @@
 import { openDB } from 'idb';
-import type { ChatMessageRecord, WindowMessageIdbMsgUpdate } from './typings';
+import type { ChatMessageRecord, WindowMessageBackendSwitch, WindowMessageIdbMsgUpdate } from './typings';
 
 const db = await openDB('SGCCDB', 1, {
   upgrade(db) {
@@ -20,10 +20,29 @@ export const myinfo = {
     if (myinfo instanceof Uint8Array)
       return myinfo;
     else
-      return null
+      return null;
   },
   async setMyinfo(myinfo: Uint8Array) {
     return await db.put('myinfo', myinfo, 'myinfo');
+  },
+  /**
+   * Switch or get SGCC backend base URL in DB
+   * @param [base] - The new value to be set
+   * @returns Lateset backend value in DB
+   */
+  async backendUrl(base?: string): Promise<string | null> {
+    if (base) {
+      await db.put('myinfo', base, 'backend');
+      window.postMessage({
+        type: 'backend-switch',
+        data: base
+      } as WindowMessageBackendSwitch);
+      return await this.backendUrl();
+    } else {
+      const cbase = await db.get('myinfo', 'backend');
+      if (typeof cbase === 'string') return cbase;
+      return null;
+    }
   }
 };
 
@@ -171,18 +190,31 @@ export const dbutil = {
     const tx = db.transaction(['keystore', 'messages', 'myinfo'], 'readonly');
     const keystoreData = await tx.objectStore('keystore').getAll();
     const messagesData = await tx.objectStore('messages').getAll();
-    const myinfoData = await tx.objectStore('myinfo').get('myinfo');
+    const myinfoStore = tx.objectStore('myinfo');
+    const myinfoKeys = await myinfoStore.getAllKeys();
+    const myinfoValues = await myinfoStore.getAll();
     await tx.done;
+
+    const myinfoExport: { [key: string]: any } = {};
+    myinfoKeys.forEach((key, index) => {
+      const value = myinfoValues[index];
+      if (value instanceof Uint8Array) {
+        myinfoExport[key.toString()] = { __type: 'Uint8Array', value: uint8ArrayToBase64(value) };
+      } else {
+        myinfoExport[key.toString()] = value;
+      }
+    });
+
     const exportData = {
       keystore: keystoreData.map(({ keyfp, key }: { keyfp: string, key: Uint8Array }) => ({
         keyfp,
         key: uint8ArrayToBase64(key)
       })),
-      messages: messagesData.map((msg: { message: Uint8Array, [key:string]: any}) => ({
+      messages: messagesData.map((msg: { message: Uint8Array, [key: string]: any }) => ({
         ...msg,
         message: uint8ArrayToBase64(msg.message)
       })),
-      myinfo: myinfoData ? uint8ArrayToBase64(myinfoData) : null,
+      myinfo: myinfoExport
     };
     return JSON.stringify(exportData);
   },
@@ -192,11 +224,25 @@ export const dbutil = {
       keyfp,
       key: base64ToUint8Array(key)
     }));
-    const messagesData = importData.messages.map((msg: { message: string, [key:string]: any}) => ({
+    const messagesData = importData.messages.map((msg: { message: string, [key: string]: any }) => ({
       ...msg,
       message: base64ToUint8Array(msg.message)
     }));
-    const myinfoData = importData.myinfo ? base64ToUint8Array(importData.myinfo) : null;
+
+    const myinfoImport = importData.myinfo;
+    const myinfoToPut: { key: any, value: any }[] = [];
+
+    if (typeof myinfoImport === 'object' && myinfoImport !== null) { // New format only
+      for (const key in myinfoImport) {
+        const entry = myinfoImport[key];
+        if (entry && entry.__type === 'Uint8Array') {
+          myinfoToPut.push({ key, value: base64ToUint8Array(entry.value) });
+        } else {
+          myinfoToPut.push({ key, value: entry });
+        }
+      }
+    }
+
     const tx = db.transaction(['keystore', 'messages', 'myinfo'], 'readwrite');
     const keystoreStore = tx.objectStore('keystore');
     const messagesStore = tx.objectStore('messages');
@@ -210,8 +256,8 @@ export const dbutil = {
     for (const item of messagesData) {
       messagesStore.put(item);
     }
-    if (myinfoData) {
-      myinfoStore.put(myinfoData, 'myinfo');
+    for (const item of myinfoToPut) {
+      myinfoStore.put(item.value, item.key);
     }
     return tx.done;
   }

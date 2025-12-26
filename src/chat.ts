@@ -4,7 +4,7 @@ import type * as openpgp from 'openpgp';
 
 import * as keystore from './keystore';
 import * as idbutils from './idbutils';
-import type { ChatMessageRecord, WindowMessageChatRecv } from './typings';
+import type { ChatMessageRecord, WindowMessage, WindowMessageChatRecv } from './typings';
 
 function getAvatar(name: string, email?: string): string {
   if (email)
@@ -27,6 +27,7 @@ function getAvatar(name: string, email?: string): string {
 
 class SGCC {
   readonly #base: string;
+  readonly #ac = new AbortController;
   constructor(base: string) {
     this.#base = base;
   }
@@ -37,12 +38,14 @@ class SGCC {
         'content-type': 'application/pgp-encrypted',
         'x-sgcc-to': key.getFingerprint().toUpperCase()
       },
-      body: new Uint8Array(res)
+      body: new Uint8Array(res),
+      signal: this.#ac.signal
     });
   }
   async watch(offset = 0n) {
     return await fetch(this.#base + '/cgi-bin/watch?offset=' + offset, {
-      headers: { 'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase() }
+      headers: { 'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase() },
+      signal: this.#ac.signal
     });
   }
   async recv(fts: string) {
@@ -50,11 +53,20 @@ class SGCC {
       headers: {
         'x-sgcc-to': (await keystore.getMyKey()).getFingerprint().toUpperCase(),
         'x-sgcc-fts': fts
-      }
+      },
+      signal: this.#ac.signal
     });
   }
+  abort() {
+    return this.#ac.abort();
+  }
 }
-const sgcc = new SGCC('https://sgcc.xhustudio.eu.org');
+let sgcc = new SGCC(await idbutils.myinfo.backendUrl() || 'https://sgcc.xhustudio.eu.org');
+window.addEventListener('message', (e: MessageEvent<WindowMessage>) => {
+  if (e.data.type !== 'backend-switch') return;
+  sgcc.abort();
+  sgcc = new SGCC(e.data.data);
+});
 
 export class Chat {
   readonly key: openpgp.Key;

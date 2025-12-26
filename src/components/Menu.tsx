@@ -1,7 +1,9 @@
 import React from 'react';
 import styles from './Menu.module.scss';
 
-import { dbutil } from '../idbutils';
+import { dbutil, myinfo } from '../idbutils';
+import { showPrompt } from './Prompt';
+import { showAlert } from './Alert';
 
 interface MenuProps {
   onClose: () => void;
@@ -39,6 +41,27 @@ const Menu: React.FC<MenuProps> = ({ onClose }) => {
           };
           e.click();
         }}>Import Data</button></li>
+        <li><button onClick={async () => {
+          const curr = await myinfo.backendUrl() || 'https://sgcc.xhustudio.eu.org';
+          const ires = await showPrompt({
+            title: 'Switch SGCC Backend',
+            label: 'Enter the new SGCC backend base URL:',
+            type: 'text',
+            placeholder: curr
+          });
+          if (ires && /^https?:\/\/.+$/.test(ires)) {
+            const n = await myinfo.backendUrl(ires);
+            await showAlert({
+              title: 'Switch SGCC Backend',
+              message: 'Backend has been successfully switched to ' + n
+            });
+          } else {
+            await showAlert({
+              title: 'Switch SGCC Backend',
+              message: 'Invalid URL'
+            });
+          }
+        }}>Backend</button></li>
       </ul>
     </div>
   );

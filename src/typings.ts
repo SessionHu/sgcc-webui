@@ -13,7 +13,7 @@ export interface DecryptedChatMessageRecord extends Omit<ChatMessageRecord, 'mes
   message: DecryptMessageResult | { data: string };
 }
 
-export type WindowMessage = WindowMessageChatRecv | WindowMessageIdbMsgUpdate;
+export type WindowMessage = WindowMessageChatRecv | WindowMessageIdbMsgUpdate | WindowMessageBackendSwitch;
 
 export interface WindowMessageBase {
   type: string,
@@ -28,4 +28,10 @@ export interface WindowMessageChatRecv extends WindowMessageBase {
 export interface WindowMessageIdbMsgUpdate extends WindowMessageBase {
   type: 'idb-msg-update',
   data: void
+}
+
+export interface WindowMessageBackendSwitch extends WindowMessageBase {
+  type: 'backend-switch',
+  /** The new backend base URL */
+  data: string
 }

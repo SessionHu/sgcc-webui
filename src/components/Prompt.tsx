@@ -7,9 +7,12 @@ export interface PromptProps {
   label: string;
   type: 'text' | 'password' | 'multiline';
   onFinish: (value: string | null) => void;
+  placeholder?: string;
 }
 
-const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
+const Prompt: React.FC<PromptProps> = ({
+  title, label, type, onFinish, placeholder
+}) => {
   const [value, setValue] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -50,6 +53,7 @@ const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
             //value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
+            placeholder={placeholder}
           />
         ) : (
           <input
@@ -60,6 +64,7 @@ const Prompt: React.FC<PromptProps> = ({ title, label, type, onFinish }) => {
             //value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
+            placeholder={placeholder}
           />
         )}
         <div className={styles.buttons}>
