@@ -42,6 +42,7 @@ const Menu: React.FC<MenuProps> = ({ onClose }) => {
           e.click();
         }}>Import Data</button></li>
         <li><button onClick={async () => {
+          onClose();
           const curr = await myinfo.backendUrl() || 'https://sgcc.xhustudio.eu.org';
           const ires = await showPrompt({
             title: 'Switch SGCC Backend',
@@ -53,12 +54,12 @@ const Menu: React.FC<MenuProps> = ({ onClose }) => {
             const n = await myinfo.backendUrl(ires);
             await showAlert({
               title: 'Switch SGCC Backend',
-              message: 'Backend has been successfully switched to ' + n
+              message: 'Backend has been successfully switched to: ' + n
             });
-          } else {
+          } else if (ires !== null) {
             await showAlert({
               title: 'Switch SGCC Backend',
-              message: 'Invalid URL'
+              message: 'Invalid URL: ' + ires
             });
           }
         }}>Backend</button></li>

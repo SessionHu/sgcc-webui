@@ -137,6 +137,7 @@ const limit = pLimit(16);
         offset = msgid;
       }
     } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') continue;
       console.warn(e);
       await new Promise((r) => setTimeout(r, 1e4));
     }
