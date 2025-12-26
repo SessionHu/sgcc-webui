@@ -5,6 +5,7 @@ export interface ChatMessageRecord {
   keyfp: string;
   message: Uint8Array;
   type: 'incoming' | 'outgoing';
+  backend: string;
 }
 
 export interface RawChatMessageRecord extends Omit<ChatMessageRecord, 'keyfp'> {}

@@ -21,7 +21,8 @@ const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message }) => {
               `Fingerprint: ${message.keyfp}\n` +
               `Verfied: ${'signatures' in message.message && (await Promise.all(message.message.signatures.map(async (v) => {
                 return v.verified;
-              }))).join(' ')}`
+              }))).join(' ')}\n` +
+              `Backend: ${message.backend}`
           });
         }}>
           {message.message.data}

@@ -27,6 +27,9 @@ function getAvatar(name: string, email?: string): string {
 
 class SGCC {
   readonly #base: string;
+  get base() {
+    return this.#base;
+  }
   readonly #ac = new AbortController;
   constructor(base: string) {
     this.#base = base;
@@ -93,7 +96,8 @@ export class Chat {
       keyfp: this.key.getFingerprint().toUpperCase(),
       message,
       type: 'outgoing',
-      msgid: BigInt((await res.text()).trim())
+      msgid: BigInt((await res.text()).trim()),
+      backend: sgcc.base
     };
     await idbutils.messages.addMessage(r);
     return r;
@@ -126,7 +130,8 @@ const limit = pLimit(16);
           data: {
             type: 'incoming',
             msgid,
-            message
+            message,
+            backend: sgcc.base
           },
         } as WindowMessageChatRecv);
         offset = msgid;
