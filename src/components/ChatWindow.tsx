@@ -95,11 +95,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         });
         const currfp = chat?.key.getFingerprint().toUpperCase();
         if (reskeyfp !== currfp) return;
-        setMessages(prev => [...prev, {
-          ...d.data,
-          message: res,
-          keyfp: reskeyfp
-        }]);
+        setMessages(prev => {
+          if (prev.some(m => m.msgid === d.data.msgid)) {
+            return prev;
+          }
+          return [...prev, {
+            ...d.data,
+            message: res,
+            keyfp: reskeyfp
+          }];
+        });
       }
     };
     window.addEventListener('message', handleMessage);
@@ -110,6 +115,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!chat) return;
     setHasMore(true);
     setIsInitialLoading(true);
+    setPrevScrollHeight(null);
     (async () => {
       setIsLoadingMore(true);
       const history = await fetchDecryptedMessages(chat, BigInt(Date.now() + '000000000'), MESSAGE_PAGE_SIZE);
