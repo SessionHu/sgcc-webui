@@ -1,4 +1,5 @@
 import { openDB } from 'idb';
+import { armor, enums, unarmor } from 'openpgp';
 import type { ChatMessageRecord, WindowMessageBackendSwitch, WindowMessageIdbMsgUpdate } from './typings';
 
 const db = await openDB('SGCCDB', 1, {
@@ -166,25 +167,6 @@ function bigIntFromRadix36(str: string): bigint {
   return result;
 }
 
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]!);
-  }
-  return btoa(binary);
-}
-
-function base64ToUint8Array(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
 export const dbutil = {
   async exportDB(): Promise<string> {
     const tx = db.transaction(['keystore', 'messages', 'myinfo'], 'readonly');
@@ -196,23 +178,24 @@ export const dbutil = {
     await tx.done;
 
     const myinfoExport: { [key: string]: any } = {};
-    myinfoKeys.forEach((key, index) => {
-      const value = myinfoValues[index];
+    for (let i = 0; i < myinfoKeys.length; i++) {
+      const key = myinfoKeys[i]!;
+      const value = myinfoValues[i];
       if (value instanceof Uint8Array) {
-        myinfoExport[key.toString()] = { __type: 'Uint8Array', value: uint8ArrayToBase64(value) };
+        myinfoExport[key.toString()] = { __type: 'Uint8Array', value: armor(enums.armor.privateKey, value) };
       } else {
         myinfoExport[key.toString()] = value;
       }
-    });
+    };
 
     const exportData = {
       keystore: keystoreData.map(({ keyfp, key }: { keyfp: string, key: Uint8Array }) => ({
         keyfp,
-        key: uint8ArrayToBase64(key)
+        key: armor(enums.armor.publicKey, key)
       })),
       messages: messagesData.map((msg: { message: Uint8Array, [key: string]: any }) => ({
         ...msg,
-        message: uint8ArrayToBase64(msg.message)
+        message: armor(enums.armor.message, msg.message)
       })),
       myinfo: myinfoExport
     };
@@ -220,14 +203,14 @@ export const dbutil = {
   },
   async importDB(jsonString: string): Promise<void> {
     const importData = JSON.parse(jsonString);
-    const keystoreData = importData.keystore.map(({ keyfp, key }: { keyfp: string, key: string }) => ({
+    const keystoreData = Promise.all(importData.keystore.map(async ({ keyfp, key }: { keyfp: string, key: string }) => ({
       keyfp,
-      key: base64ToUint8Array(key)
-    }));
-    const messagesData = importData.messages.map((msg: { message: string, [key: string]: any }) => ({
+      key: (await unarmor(key)).data
+    })));
+    const messagesData = Promise.all(importData.messages.map(async (msg: { message: string, [key: string]: any }) => ({
       ...msg,
-      message: base64ToUint8Array(msg.message)
-    }));
+      message: (await unarmor(msg.message)).data
+    })));
 
     const myinfoImport = importData.myinfo;
     const myinfoToPut: { key: any, value: any }[] = [];
@@ -236,7 +219,7 @@ export const dbutil = {
       for (const key in myinfoImport) {
         const entry = myinfoImport[key];
         if (entry && entry.__type === 'Uint8Array') {
-          myinfoToPut.push({ key, value: base64ToUint8Array(entry.value) });
+          myinfoToPut.push({ key, value: (await unarmor(entry.value)).data });
         } else {
           myinfoToPut.push({ key, value: entry });
         }
@@ -250,10 +233,10 @@ export const dbutil = {
     await keystoreStore.clear();
     await messagesStore.clear();
     await myinfoStore.clear();
-    for (const item of keystoreData) {
+    for (const item of await keystoreData) {
       keystoreStore.put(item);
     }
-    for (const item of messagesData) {
+    for (const item of await messagesData) {
       messagesStore.put(item);
     }
     for (const item of myinfoToPut) {
