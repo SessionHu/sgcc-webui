@@ -1,5 +1,11 @@
 # SGCC WebUI
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/SessionHu/sgcc-webui/ci.yml?style=flat-square&link=https%3A%2F%2Fgithub.com%2FSessionHu%2Fsgcc-webui%2Factions%2Fworkflows%2Fci.yml)
+![GitHub License](https://img.shields.io/github/license/SessionHu/sgcc-webui?style=flat-square&link=https%3A%2F%2Fgithub.com%2FSessionHu%2Fsgcc-webui%2Fblob%2Fmaster%2FLICENSE)
+![GitHub top language](https://img.shields.io/github/languages/top/SessionHu/sgcc-webui?style=flat-square&link=https%3A%2F%2Fgithub.com%2FSessionHu%2Fsgcc-webui)
+![GitHub repo size](https://img.shields.io/github/repo-size/SessionHu/sgcc-webui?style=flat-square&link=https%3A%2F%2Fgithub.com%2FSessionHu%2Fsgcc-webui)
+
+
 A simple, secure web-based chat application using React and OpenPGP.js. This project is a reference web frontend implementation for [gpgchatplatform](https://github.com/SessionHu/gpgchatplatform).
 
 ## Features
