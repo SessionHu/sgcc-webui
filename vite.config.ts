@@ -1,9 +1,34 @@
 import { defineConfig } from 'vite';
 import viteReact from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [ viteReact() ],
+  plugins: [
+    viteReact(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: [ 'favicon.svg' ],
+      manifest: {
+        name: 'SGCC WebUI',
+        short_name: 'SGCC',
+        icons: [
+          {
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: [ '**/*.{js,css,html,svg}' ]
+      },
+      devOptions: {
+        enabled: true,
+      },
+    })
+  ],
   clearScreen: false,
   build: {
     license: {
