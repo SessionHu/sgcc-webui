@@ -23,7 +23,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: [ '**/*.{js,css,html,svg}' ],
+        globPatterns: [ '**/*.{js,css,html,svg,txt,md}' ],
         sourcemap: false,
         mode: platform() === 'android' ? 'development' : 'production' // prevent crash in Termux
       },

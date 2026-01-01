@@ -60,6 +60,14 @@ To check the code for TypeScript errors, run:
 yarn lint
 ```
 
+## Disclaimer
+
+This software is provided "AS IS" without warranty. This software relies on third-party libraries; we are not responsible for their security vulnerabilities. Users are solely responsible for their actions and must comply with all applicable laws.
+
+## Privacy
+
+This is free software. You are encouraged to audit the source code to verify its privacy practices. All data is stored locally on your device.
+
 ## License
 
 This project is licensed under the **GPL-3.0-or-later**. See the [LICENSE](LICENSE) file for details.
