@@ -25,7 +25,7 @@ export default defineConfig({
       workbox: {
         globPatterns: [ '**/*.{js,css,html,svg}' ],
         sourcemap: false,
-        mode: platform() === 'android' && 'development' // prevent crash in Termux
+        mode: platform() === 'android' ? 'development' : 'production' // prevent crash in Termux
       },
       devOptions: {
         //enabled: true,
