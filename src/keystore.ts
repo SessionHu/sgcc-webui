@@ -156,7 +156,7 @@ export async function doDecrypt(binaryMessage: Uint8Array) {
   const decrypted = await openpgp.decrypt({
     message,
     decryptionKeys: await getMyDecryptedPrivateKey(),
-    verificationKeys: await store.getAllKeys() as openpgp.PublicKey[]
+    verificationKeys: [...await store.getAllKeys() as openpgp.PublicKey[], await getMyKey()]
   });
   return decrypted;
 }
