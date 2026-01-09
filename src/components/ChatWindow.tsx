@@ -21,7 +21,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const textaeraRef = React.useRef<HTMLTextAreaElement>(null);
-  
+
   const [prevScrollHeight, setPrevScrollHeight] = React.useState<number | null>(0);
 
   const [messages, setMessages] = React.useState<DecryptedChatMessageRecord[]>([]);

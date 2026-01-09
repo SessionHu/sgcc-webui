@@ -12,8 +12,10 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
 
   React.useEffect(() => {
     myinfo.backendUrl().then(url => {
-     if (backendInputRef.current && url)
+     if (backendInputRef.current && url) {
        backendInputRef.current.placeholder = url;
+       backendInputRef.current.defaultValue = url;
+     }
     });
   }, []);
 
@@ -49,9 +51,9 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
 
   const handleSave = async () => {
     const val = backendInputRef.current?.value;
-    if (!val) {
+    if (!val || backendInputRef.current?.placeholder === val) {
       onClose();
-    } else if (/^https?:\/\/.+$/.test(val)) {
+    } else if (backendInputRef.current?.checkValidity()) {
       const n = await myinfo.backendUrl(val);
       await showAlert({
         title: 'Switch SGCC Backend',
@@ -81,8 +83,9 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
           <label htmlFor="backend-url">SGCC Backend URL</label>
           <input
             type="url"
+            pattern="^https?://.+$"
             id="backend-url"
-            placeholder="https://sgcc.xhustudio.eu.org/"
+            placeholder="https://sgcc.xhustudio.eu.org"
             ref={backendInputRef}
           />
         </div>

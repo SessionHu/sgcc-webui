@@ -57,6 +57,9 @@
 .buttonGroup {
   display: flex;
   gap: 10px;
+  > button {
+    line-height: 1.2;
+  }
 }
 
 .actions {
