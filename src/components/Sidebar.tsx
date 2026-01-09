@@ -21,43 +21,52 @@ const Sidebar: React.FC<SidebarProps> = ({
   toggleVisibility,
 }) => {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const [contacts, setContacts] = React.useState<{
+  const [contactData, setContactData] = React.useState<{
     avatar: string,
     name: string,
-    active: boolean,
     msg: string,
     key: Key
   }[]>([]);
+  const [reloadCounter, setReloadCounter] = React.useState(0);
 
-  // Load contacts on mount
-  const loadContacts = React.useCallback(async () => {
-    try {
-      const keys = await store.getAllKeys();
-      setContacts(await Promise.all(keys.map(async (key) => {
-        const c = new Chat(key);
-        const m = await c.lastMessage();
-        return {
-          avatar: c.avatar,
-          name: c.name,
-          active: key.getFingerprint() === activeContact?.getFingerprint(),
-          key,
-          msg: m ? (await doDecrypt(m.message)).data : ''
-        };
-      })));
-    } catch (error) {
-      console.error("Failed to load contacts:", error);
-    }
-  }, [activeContact]);
+  // Set up message listener once on mount
   React.useEffect(() => {
-    loadContacts();
-    const handleMessage = async (e: MessageEvent<WindowMessage>) => {
+    const handleMessage = (e: MessageEvent<WindowMessage>) => {
       if (e.data.type === 'idb-msg-update') {
-        await loadContacts();
+        setReloadCounter(c => c + 1);
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [loadContacts]);
+  }, []);
+
+  // Load raw contact data
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const keys = await store.getAllKeys();
+        const data = await Promise.all(keys.map(async (key) => {
+          const c = new Chat(key);
+          const m = await c.lastMessage();
+          return {
+            avatar: c.avatar,
+            name: c.name,
+            key,
+            msg: m ? (await doDecrypt(m.message)).data : ''
+          };
+        }));
+        setContactData(data);
+      } catch (error) {
+        console.error("Failed to load contacts:", error);
+      }
+    })();
+  }, [reloadCounter]);
+
+  // Derive the final contacts list with active status for rendering
+  const contacts = contactData.map((contact) => ({
+    ...contact,
+    active: contact.key.getFingerprint() === activeContact?.getFingerprint(),
+  }));
 
   const handleAddContact = async () => {
     try {
@@ -68,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       });
       if (armoredKeys) {
         await addKeysFromArmored(armoredKeys);
-        await loadContacts();
+        setReloadCounter(c => c + 1);
       }
     } catch (e) {
       console.warn(e);
