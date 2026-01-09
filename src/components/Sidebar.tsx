@@ -1,5 +1,5 @@
 import React from 'react';
-import Menu from './Menu';
+import Settings from './Settings';
 import styles from './Sidebar.module.scss';
 import { showPrompt } from './Prompt';
 import { showAlert } from './Alert';
@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectContact,
   toggleVisibility,
 }) => {
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [contacts, setContacts] = React.useState<{
     avatar: string,
     name: string,
@@ -80,19 +80,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const onMenuClick = () => {
-    setMenuOpen(!menuOpen);
+    setSettingsOpen(!settingsOpen);
   };
 
   return (
     <div className={styles.chatSidebar}>
       <header className={styles.sidebarHeader}>
         <h3>Contacts</h3>
-        <div>
-          <button className={styles.menuButton} onClick={onMenuClick}>
-            <span className="emoji-icon">≡</span>
-          </button>
-          {menuOpen && <Menu onClose={onMenuClick} />}
-        </div>
+        <button className={styles.menuButton} onClick={onMenuClick}>
+          <span className="emoji-icon">≡</span>
+        </button>
+        {settingsOpen && <Settings onClose={onMenuClick} />}
         <button className={styles.addButton} onClick={handleAddContact}>
           <span className="emoji-icon">+</span>
         </button>

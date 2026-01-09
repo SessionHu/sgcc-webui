@@ -1,0 +1,92 @@
+@use 'sass:color';
+@use '../globals.scss' as globals;
+
+.settings {
+  margin: auto;
+  background-color: globals.$main-bg;
+  color: globals.$text-color;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.2s ease-out;
+
+  h3 {
+    margin-top: 0;
+    text-align: center;
+    color: globals.$text-color;
+  }
+
+}
+
+.settingsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: globals.$secondary-text;
+    font-weight: bold;
+  }
+
+  input[type='text'],
+  input[type='url'] {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid globals.$border-color;
+    background-color: globals.$input-bg;
+    color: globals.$text-color;
+    box-sizing: border-box;
+    //background: transparent;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.primaryButton {
+  @extend %base-button;
+  background-color: globals.$accent-button-color;
+  color: white;
+  &:hover {
+    background-color: color.adjust(
+      $color: globals.$accent-button-color,
+      $lightness: -5%
+    );
+  }
+}
+
+
+.secondaryButton {
+  @extend %base-button;
+  background-color: globals.$border-color;
+  color: globals.$text-color;
+  &:hover {
+    background-color: color.adjust(
+      $color: globals.$border-color,
+      $lightness: -10%
+    );
+  }
+}

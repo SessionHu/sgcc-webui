@@ -28,15 +28,15 @@
 }
 
 .addButton {
-  @extend %base-button;
+  @extend %base-icon-button;
 }
 
 .menuButton {
-  @extend %base-button;
+  @extend %base-icon-button;
 }
 
 .toggleButton {
-  @extend %base-button;
+  @extend %base-icon-button;
   display: none;
 }
 

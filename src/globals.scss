@@ -55,7 +55,8 @@ h3 {
 }
 
 // Base styles for reuse
-%base-button {
+
+%base-icon-button {
   background: none;
   border: none;
   font-size: 24px;
@@ -68,3 +69,14 @@ h3 {
     color: $secondary-text;
   }
 }
+
+%base-button {
+  border: unset;
+  border-radius: 1em;
+  line-height: 100%;
+  margin-left: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+

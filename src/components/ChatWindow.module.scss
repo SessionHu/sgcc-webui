@@ -18,7 +18,7 @@
 }
 
 .toggleButton {
-  @extend %base-button;
+  @extend %base-icon-button;
   display: none; // Initially hidden, shown in media query
   margin-right: 4px;
 }
