@@ -2,17 +2,7 @@
 @use '../globals.scss' as globals;
 
 .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100dvh;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  @extend %base-overlay;
 }
 
 .prompt {
@@ -21,6 +11,7 @@
   border-radius: 8px;
   min-width: 300px;
   animation: scaleIn 0.2s ease-out;
+  margin: auto;
 }
 
 .title {
@@ -57,14 +48,9 @@
 }
 
 .buttonCancel {
-  @extend %base-button;
+  @extend %base-button-secondary;
 }
 
 .buttonOK {
-  @extend %base-button;
-  color: white;
-  background-color: globals.$accent-button-color;
-  &:hover {
-    background-color: color.adjust($color: globals.$accent-button-color, $lightness: -5%);
-  }
+  @extend %base-button-primary;
 }

@@ -79,3 +79,37 @@ h3 {
   transition: background-color 0.2s ease;
 }
 
+%base-button-primary {
+  @extend %base-button;
+  background-color: $accent-button-color;
+  color: white;
+  &:hover {
+    background-color: color.adjust(
+      $color: $accent-button-color,
+      $lightness: -5%
+    );
+  }
+}
+
+%base-button-secondary {
+  @extend %base-button;
+  background-color: $border-color;
+  color: $text-color;
+  &:hover {
+    background-color: color.adjust(
+      $color: $border-color,
+      $lightness: -5%
+    );
+  }
+}
+
+%base-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  animation: fadeIn 0.2s ease-out;
+}
