@@ -34,6 +34,7 @@ function App() {
         chat={chat}
         isVisible={isChatWindowVisible}
         toggleVisibility={toggleSidebar}
+        onChatRemove={() => setActiveContact(null)}
       />
     </div>
   );

@@ -11,12 +11,13 @@ interface ChatWindowProps {
   chat: Chat | null;
   isVisible: boolean;
   toggleVisibility: (isVisible?: boolean) => void;
+  onChatRemove: () => void;
 }
 
 const MESSAGE_PAGE_SIZE = 30;
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
-  chat, isVisible, toggleVisibility,
+  chat, isVisible, toggleVisibility, onChatRemove
 }) => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
@@ -161,6 +162,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevScrollHeight;
   }, [messages, prevScrollHeight]);
 
+  const removeChat = () => {
+    if (!chat) return;
+    keystore.store.removeKey(chat.key);
+    onChatRemove();
+  };
 
   return (
     <div className={`${styles.chatMain} ${isVisible ? styles.visible : ''}`}>
@@ -169,6 +175,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           <span className="emoji-icon">&lt;</span>
         </button>
         <h3>{chat && chat.name}</h3>
+        <button className={styles.removeChatButton} onClick={() => removeChat()}>
+          <span className="emoji-icon">&#x26cc;</span>
+        </button>
       </header>
       <div className={styles.chatMessages} ref={messagesContainerRef} onScroll={handleScroll}>
         {isLoadingMore && <div className={styles.loader}>Loading older messages...</div>}
